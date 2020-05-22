@@ -1,0 +1,15 @@
+{
+	"name": "preact-i18n-stack",
+	"description": "Full stack localization for preact.",
+	"private": true,
+	"scripts": {
+	},
+	"dependencies": {
+		"typescript": "^3.9.3"
+	},
+	"devDependencies": {},
+	"peerDependencies": {},
+	"repository": "https://code.q-zero.de/mxjp/preact-i18n-stack.git",
+	"author": "Max J. Polster",
+	"license": "MIT"
+}

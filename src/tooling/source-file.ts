@@ -14,21 +14,21 @@ export class SourceFile {
 	public readonly source: ts.SourceFile;
 
 	public extract(): SourceFile.ExtractResult {
-		const values = new Map<string, string | undefined>();
+		const pairs = new Map<string, string | undefined>();
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
-					values.set(id, value);
+					pairs.set(id, value);
 				}
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
-		return { values };
+		return { pairs };
 	}
 
-	public update(context: SourceFile.UpdateContext) {
+	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
@@ -66,7 +66,10 @@ export class SourceFile {
 		}
 		sourceText += this.sourceText.slice(sourcePos);
 
-		return { sourceText };
+		return {
+			changed: rewrites.length > 0,
+			sourceText
+		};
 	}
 }
 
@@ -94,7 +97,7 @@ function trailingSpace(value: string) {
 
 export namespace SourceFile {
 	export interface ExtractResult {
-		readonly values: Map<string, string | undefined>;
+		readonly pairs: Map<string, string | undefined>;
 	}
 
 	export interface UpdateContext {
@@ -102,6 +105,7 @@ export namespace SourceFile {
 	}
 
 	export interface UpdateResult {
+		readonly changed: boolean;
 		readonly sourceText: string;
 	}
 }

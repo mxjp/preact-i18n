@@ -69,3 +69,10 @@ TODO: Document how to use command line or webpack plugins.
 TODO: Write a vscode extension to..
 + ..highlight text fragments with missing or outdated translations.
 + ..edit translations directly in the code view.
+
+<br>
+
+
+
+## Resolving Merge Conflicts
+TODO: Write a git merge driver for project data files.

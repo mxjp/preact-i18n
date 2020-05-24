@@ -13,7 +13,7 @@ test("extract", t => {
 
 	const result = sourceFile.extract();
 	t.deepEqual(result, {
-		values: new Map([
+		pairs: new Map([
 			["7", undefined],
 			["42", "bar"]
 		])

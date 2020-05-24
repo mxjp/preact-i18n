@@ -3,7 +3,9 @@
 		"target": "ES2018",
 		"module": "ESNext",
 		"moduleResolution": "Node",
-		"strict": true
+		"strict": true,
+		"jsx": "react",
+		"jsxFactory": "h"
 	},
 	"include": [
 		"src"

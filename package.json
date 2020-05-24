@@ -7,7 +7,9 @@
 	"dependencies": {
 		"typescript": "^3.9.3"
 	},
-	"devDependencies": {},
+	"devDependencies": {
+		"preact": "^10.4.4"
+	},
 	"peerDependencies": {},
 	"repository": "https://code.q-zero.de/mxjp/preact-i18n-stack.git",
 	"author": "Max J. Polster",

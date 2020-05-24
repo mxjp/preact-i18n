@@ -57,6 +57,13 @@ render(<Language.Provider use={i18n}>
 
 
 
+## Translation Workflow
+TODO: Document how to use command line or webpack plugins.
+
+<br>
+
+
+
 ## Writing Translations
 
 TODO: Write a vscode extension to..

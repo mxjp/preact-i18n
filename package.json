@@ -3,12 +3,23 @@
 	"description": "Full stack localization for preact.",
 	"private": true,
 	"scripts": {
+		"clean": "rimraf dist/**/*",
+		"compile:runtime": "tsc -p tsconfig-runtime.json",
+		"compile:tooling": "tsc -p tsconfig-tooling.json",
+		"compile": "npm run clean && concurrently npm:compile:runtime npm:compile:tooling",
+		"test": "npm run clean && tsc -p tsconfig-test.json && ava",
+		"test:watch": "npm run clean && tsc -p tsconfig-test.json && concurrently \"tsc -p tsconfig-test.json -w\" \"ava -w\"",
+		"prepack": "npm test && npm run compile"
 	},
 	"dependencies": {
+		"js-string-escape": "^1.0.1",
 		"typescript": "^3.9.3"
 	},
 	"devDependencies": {
-		"preact": "^10.4.4"
+		"ava": "^3.8.2",
+		"concurrently": "^5.2.0",
+		"preact": "^10.4.4",
+		"rimraf": "^3.0.2"
 	},
 	"peerDependencies": {},
 	"repository": "https://code.q-zero.de/mxjp/preact-i18n-stack.git",

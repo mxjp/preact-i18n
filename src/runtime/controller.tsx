@@ -1,5 +1,4 @@
 import { Language } from "./language";
-import { FunctionComponent } from "preact";
 
 export class I18n {
 	public constructor(options: I18n.Options) {

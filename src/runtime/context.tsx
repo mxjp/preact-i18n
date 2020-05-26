@@ -17,7 +17,7 @@ export namespace I18nContext {
 	}
 
 	export function create(options: Options): I18nContext {
-		const namespace = options.namespace || "default";
+		const namespace = options.namespace || "~";
 		const sourceLanguage = options.sourceLanguage || "en";
 
 		function T(props: TProps): ComponentChild {

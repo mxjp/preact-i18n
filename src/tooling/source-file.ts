@@ -14,22 +14,23 @@ export class SourceFile {
 	public readonly source: ts.SourceFile;
 
 	public extract(): SourceFile.ExtractResult {
-		const pairs = new Map<string, string | undefined>();
+		const values = new Map<string, string | undefined>();
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
-					pairs.set(id, value);
+					values.set(id, value);
 				}
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
-		return { pairs };
+		return { values };
 	}
 
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
+		const values = new Map<string, string | undefined>();
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
 				const idAttribute = getJsxAttribute(node.attributes, "id");
@@ -52,6 +53,8 @@ export class SourceFile {
 						]);
 					}
 				}
+				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
+				values.set(updatedId, value);
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
@@ -68,7 +71,8 @@ export class SourceFile {
 
 		return {
 			changed: rewrites.length > 0,
-			sourceText
+			sourceText,
+			values
 		};
 	}
 }
@@ -97,7 +101,8 @@ function trailingSpace(value: string) {
 
 export namespace SourceFile {
 	export interface ExtractResult {
-		readonly pairs: Map<string, string | undefined>;
+		/** Map of all ids to optional values. */
+		readonly values: Map<string, string | undefined>;
 	}
 
 	export interface UpdateContext {
@@ -107,5 +112,7 @@ export namespace SourceFile {
 	export interface UpdateResult {
 		readonly changed: boolean;
 		readonly sourceText: string;
+		/** Map of all (updated) ids to optional values. */
+		readonly values: Map<string, string | undefined>;
 	}
 }

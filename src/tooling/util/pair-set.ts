@@ -34,11 +34,6 @@ export class PairSet<K, V> {
 	public hasValue(value: V) {
 		return this._values.has(value);
 	}
-
-	public valueHasOtherKeys(value: V, key: K) {
-		const keys = this._values.get(value);
-		return keys ? (keys.has(key) ? keys.size > 1 : keys.size > 0) : false;
-	}
 }
 
 function add<K, V>(map: Map<K, Set<V>>, key: K, value: V) {

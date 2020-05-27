@@ -1,6 +1,6 @@
 import test from "ava";
 import * as path from "path";
-import { SourceFile } from "../../src/tooling/source-file";
+import { SourceFile } from "../../src/tooling";
 
 const filename = path.join(__dirname, "test-source.jsx");
 

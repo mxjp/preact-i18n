@@ -45,17 +45,18 @@ export class Project {
 
 	public processSources() {
 		let nextId = 0;
+		const updatedIds = new Set<string>();
 
 		for (const filename of this._unprocessedSources) {
 			let source = this._sources.get(filename)!;
 			const result = source.update({
 				updateId: id => {
-					if (id === undefined || this._sourceIds.valueHasOtherKeys(id, filename)) {
-						while (this._sourceIds.hasValue(String(nextId))) {
-							nextId++;
-						}
-						id = String(nextId);
+					if (id === undefined || updatedIds.has(id)) {
+						do {
+							id = String(nextId++);
+						} while (this._sourceIds.hasValue(id));
 					}
+					updatedIds.add(id);
 					return id;
 				}
 			});

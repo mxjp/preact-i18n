@@ -1,12 +1,13 @@
 import { SourceFile } from "./source-file";
 import { PairSet } from "./util/pair-set";
+import { Config } from "./config";
 
 export class Project {
-	public constructor(options: Project.Options) {
-		this._namespace = options.namespace || "~";
+	public constructor(config: Config) {
+		this._config = config;
 	}
 
-	private readonly _namespace: string;
+	private readonly _config: Config;
 
 	/** Map of filenames to source instances. */
 	private readonly _sources = new Map<string, SourceFile>();
@@ -113,7 +114,7 @@ export class Project {
 					resources.set(name, language);
 				}
 				if (lastModifiedTime <= Date.parse(translations[name].lastModified)) {
-					Project.LanguageResources.setValue(language, this._namespace, id, translations[name].value);
+					Project.LanguageResources.setValue(language, this._config.namespace, id, translations[name].value);
 				}
 			}
 		}
@@ -125,10 +126,6 @@ export class Project {
 }
 
 export namespace Project {
-	export interface Options {
-		readonly namespace?: string;
-	}
-
 	export interface HandleModifiedContext {
 		writeSource(filename: string, sourceText: string): Promise<void> | void;
 		writeProjectData(data: Project.Data): Promise<void> | void;

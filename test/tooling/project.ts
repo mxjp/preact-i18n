@@ -1,6 +1,10 @@
 import test from "ava";
 import * as path from "path";
-import { Project, SourceFile } from "../../src/tooling";
+import { Project, SourceFile, Config } from "../../src/tooling";
+
+const config = Config.fromJson({
+	namespace: "app"
+}, __dirname);
 
 const filenameA = path.join(__dirname, "test-source-a.jsx");
 const filenameB = path.join(__dirname, "test-source-b.jsx");
@@ -8,9 +12,7 @@ const filenameB = path.join(__dirname, "test-source-b.jsx");
 const lastModified = new Date(Date.now() - 1000).toISOString();
 
 test("workflow", async t => {
-	const project = new Project({
-		namespace: "app"
-	});
+	const project = new Project(config);
 
 	project.data = {
 		values: {

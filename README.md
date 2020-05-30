@@ -57,8 +57,16 @@ render(<Language.Provider use={i18n}>
 
 
 
-## Translation Workflow
-TODO: Document how to use command line or webpack plugins.
+# Translation Workflow
+
+## Command Line
+```bash
+# Start translation workflow:
+preact-i18n start
+
+# Run diagnostics and compile translations:
+preact-i18n compile
+```
 
 <br>
 

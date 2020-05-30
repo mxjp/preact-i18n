@@ -7,17 +7,26 @@
 		"compile:runtime": "tsc -p tsconfig-runtime.json",
 		"compile:tooling": "tsc -p tsconfig-tooling.json",
 		"compile": "npm run clean && concurrently npm:compile:runtime npm:compile:tooling",
+		"watch:runtime": "npm run compile:runtime -- -w",
+		"watch:tooling": "npm run compile:tooling -- -w",
+		"watch": "npm run clean && concurrently npm:watch:runtime npm:watch:tooling",
 		"test": "npm run clean && tsc -p tsconfig-test.json && ava",
 		"test:watch": "npm run clean && tsc -p tsconfig-test.json && concurrently \"tsc -p tsconfig-test.json -w\" \"ava -w\"",
-		"prepack": "npm test && npm run compile"
+		"prepack": "npm test && npm run compile",
+		"cli": "node dist/tooling/cli.js"
+	},
+	"bin": {
+		"preact-i18n": "node dist/tooling/cli.js"
 	},
 	"dependencies": {
 		"js-string-escape": "^1.0.1",
 		"json5": "^2.1.3",
+		"minimist": "^1.2.5",
 		"typescript": "^3.9.3"
 	},
 	"devDependencies": {
 		"@types/json5": "0.0.30",
+		"@types/minimist": "^1.2.0",
 		"ava": "^3.8.2",
 		"concurrently": "^5.2.0",
 		"preact": "^10.4.4",

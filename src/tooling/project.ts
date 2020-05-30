@@ -4,10 +4,10 @@ import { Config } from "./config";
 
 export class Project {
 	public constructor(config: Config) {
-		this._config = config;
+		this.config = config;
 	}
 
-	private readonly _config: Config;
+	public readonly config: Config;
 
 	/** Map of filenames to source instances. */
 	private readonly _sources = new Map<string, SourceFile>();
@@ -114,7 +114,7 @@ export class Project {
 					resources.set(name, language);
 				}
 				if (lastModifiedTime <= Date.parse(translations[name].lastModified)) {
-					Project.LanguageResources.setValue(language, this._config.namespace, id, translations[name].value);
+					Project.LanguageResources.setValue(language, this.config.namespace, id, translations[name].value);
 				}
 			}
 		}

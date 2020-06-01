@@ -37,20 +37,23 @@ async function main() {
 		case "start": {
 			await project.loadProjectData();
 			await project.loadSources();
-			// TODO: Start project server for integrated translation tools.
-			// TODO: Initially and on change:
-			// - Update sources.
-			// - Process sources
-			// - Write modified sources and data to disk.
+
+			project.processSources();
+			await project.writeModified();
+			await project.writeOutput();
+
+			project.watchSources();
+
 			break;
 		}
 
 		case "compile": {
 			await project.loadProjectData();
 			await project.loadSources();
-			// TODO: Process sources for diagnostics.
-			// TODO: Fail when sources and data are out of sync.
-			// TODO: Compile and write resources to disk.
+
+			project.processSources();
+			await project.writeOutput();
+
 			break;
 		}
 

@@ -1,8 +1,8 @@
-import { h, ComponentChild } from "preact";
+import { h } from "preact";
 import { Language } from "./language";
 
 export interface I18nContext {
-	T(props: I18nContext.TProps): ComponentChild;
+	T(props: I18nContext.TProps): h.JSX.Element;
 }
 
 export namespace I18nContext {
@@ -20,7 +20,7 @@ export namespace I18nContext {
 		const namespace = options.namespace || "~";
 		const sourceLanguage = options.sourceLanguage || "en";
 
-		function T(props: TProps): ComponentChild {
+		function T(props: TProps): h.JSX.Element {
 			return <Language.Consumer>{language => {
 				if (language !== null && language.name !== sourceLanguage && props.id !== undefined) {
 					const value = language.t(namespace, props.id);

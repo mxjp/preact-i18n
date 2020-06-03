@@ -1,7 +1,7 @@
 {
 	"name": "preact-i18n-stack",
 	"description": "Full stack localization for preact.",
-	"private": true,
+	"version": "0.1.0",
 	"scripts": {
 		"clean": "rimraf dist/**/*",
 		"compile:runtime": "tsc -p tsconfig-runtime.json",

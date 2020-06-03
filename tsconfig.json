@@ -9,7 +9,9 @@
 		"typeRoots": [
 			"node_modules/@types",
 			"src/types"
-		]
+		],
+		"declaration": true,
+		"sourceMap": true
 	},
 	"include": [
 		"src",

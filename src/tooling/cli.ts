@@ -42,7 +42,7 @@ async function main() {
 			await project.writeModified();
 			await project.writeOutput();
 
-			project.watchSources();
+			project.watch();
 
 			break;
 		}

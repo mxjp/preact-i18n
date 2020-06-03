@@ -1,7 +1,7 @@
 import { Project } from "./project";
 import { dirname } from "path";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
-import { findFiles, watchFiles } from "./util/files";
+import { findFiles, watchFiles, watchFile } from "./util/files";
 import { SourceFile } from "./source-file";
 
 export class StandaloneProject extends Project {
@@ -38,8 +38,8 @@ export class StandaloneProject extends Project {
 		});
 	}
 
-	watchSources() {
-		return watchFiles(this.config.context, this.config.sources, async (changed, deleted) => {
+	watch() {
+		const stopSources = watchFiles(this.config.context, this.config.sources, async (changed, deleted) => {
 			await this.loadProjectData();
 			for (const filename of changed) {
 				this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
@@ -51,6 +51,18 @@ export class StandaloneProject extends Project {
 			await this.writeModified();
 			await this.writeOutput();
 		});
+
+		const stopProjectData = watchFile(this.config.projectData, async exists => {
+			await this.loadProjectData();
+			this.processSources();
+			await this.writeModified();
+			await this.writeOutput();
+		});
+
+		return async () => {
+			await stopSources();
+			await stopProjectData();
+		}
 	}
 
 	async writeOutput() {

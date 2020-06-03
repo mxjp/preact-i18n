@@ -1,5 +1,5 @@
 {
-	"name": "preact-i18n-stack",
+	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
 	"version": "0.1.0",
 	"scripts": {

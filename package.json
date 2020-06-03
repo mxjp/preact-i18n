@@ -1,7 +1,8 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.1.0",
+	"version": "0.1.1",
+	"main": "./dist/runtime/index.js",
 	"scripts": {
 		"clean": "rimraf dist/**/*",
 		"compile:runtime": "tsc -p tsconfig-runtime.json",
@@ -16,7 +17,7 @@
 		"cli": "node dist/tooling/cli.js"
 	},
 	"bin": {
-		"preact-i18n": "node dist/tooling/cli.js"
+		"preact-i18n": "node ./dist/tooling/cli.js"
 	},
 	"dependencies": {
 		"chokidar": "^3.4.0",

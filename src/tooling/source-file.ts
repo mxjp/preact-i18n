@@ -48,6 +48,24 @@ export class SourceFile {
 		return valid;
 	}
 
+	public fragments() {
+		const fragments = new Map<string, SourceFile.Range>();
+		(function traverse(this: SourceFile, node: ts.Node) {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
+				if (typeof id === "string") {
+					const text = this.sourceText.slice(node.pos, node.end);
+					fragments.set(id, {
+						pos: node.pos + leadingSpace(text).length,
+						end: node.end - trailingSpace(text).length
+					});
+				}
+			}
+			ts.forEachChild(node, n => traverse.call(this, n));
+		}).call(this, this.source);
+		return fragments;
+	}
+
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
 		const values = new Map<string, string | undefined>();
@@ -126,6 +144,11 @@ export namespace SourceFile {
 		 * @returns True if the id is unique in the project and the value is in sync with the project data.
 		 */
 		verifyPair(id: string, value: string | undefined): boolean;
+	}
+
+	export interface Range {
+		readonly pos: number;
+		readonly end:  number;
 	}
 
 	export interface UpdateContext {

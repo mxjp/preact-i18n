@@ -38,3 +38,16 @@ test("update", t => {
 		<T value="bar" id="5" />
 	`);
 });
+
+test("fragments", t => {
+	const sourceFile = new SourceFile(filename, `
+		<T value="foo" />
+		<T id="7" />
+		<T value="bar" id="42" />
+	`);
+
+	t.deepEqual(sourceFile.fragments(), new Map<string, SourceFile.Range>([
+		["7", { pos: 23, end: 35 }],
+		["42", { pos: 38, end: 63 }]
+	]));
+});

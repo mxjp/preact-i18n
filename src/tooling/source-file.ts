@@ -13,19 +13,39 @@ export class SourceFile {
 	public readonly sourceText: string;
 	public readonly source: ts.SourceFile;
 
-	public extract(): SourceFile.ExtractResult {
-		const values = new Map<string, string | undefined>();
+	public ids(): Set<string> {
+		const ids = new Set<string>();
+		(function traverse(this: SourceFile, node: ts.Node) {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
+				if (typeof id === "string") {
+					ids.add(id);
+				}
+			}
+			ts.forEachChild(node, n => traverse.call(this, n));
+		}).call(this, this.source);
+		return ids;
+	}
+
+	public verify(context: SourceFile.VerifyContext) {
+		let valid = true;
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
-					values.set(id, value);
+					if (!context.verifyPair(id, value)) {
+						// TODO: Emit diagnostic.
+						valid = false;
+					}
+				} else if (id !== undefined) {
+					// TODO: Emit diagnostic.
+					valid = false;
 				}
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
-		return { values };
+		return valid;
 	}
 
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
@@ -100,12 +120,20 @@ function trailingSpace(value: string) {
 }
 
 export namespace SourceFile {
-	export interface ExtractResult {
-		/** Map of all ids to optional values. */
-		readonly values: Map<string, string | undefined>;
+	export interface VerifyContext {
+		/**
+		 * Called to verify an id-value pair.
+		 * @returns True if the id is unique in the project and the value is in sync with the project data.
+		 */
+		verifyPair(id: string, value: string | undefined): boolean;
 	}
 
 	export interface UpdateContext {
+		/**
+		 * Called to get a project wide unique id.
+		 * @param id The preferred id.
+		 * @returns The project wide unique id.
+		 */
 		updateId(id?: string): string;
 	}
 

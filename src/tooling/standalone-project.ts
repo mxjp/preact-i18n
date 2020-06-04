@@ -7,7 +7,7 @@ import { SourceFile } from "./source-file";
 export class StandaloneProject extends Project {
 	private _projectDataMtime: number | undefined = undefined;
 
-	async loadProjectData() {
+	private async _loadProjectData() {
 		const stats = await stat(this.config.projectData).catch(error => {
 			if (error?.code !== "ENOENT") {
 				throw error;
@@ -19,7 +19,7 @@ export class StandaloneProject extends Project {
 		}
 	}
 
-	async loadSources() {
+	private async _loadSources() {
 		for await (const filename of findFiles(this.config.context, this.config.sources)) {
 			if (/\.[jt]sx$/.test(filename)) {
 				this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
@@ -27,8 +27,13 @@ export class StandaloneProject extends Project {
 		}
 	}
 
-	async writeModified() {
-		await this.handleModified({
+	public async load() {
+		await this._loadProjectData();
+		await this._loadSources();
+	}
+
+	public async processAndWrite() {
+		await this.processSources({
 			writeProjectData: data => {
 				return writeFile(this.config.projectData, JSON.stringify(data, null, "\t") + "\n", "utf8");
 			},
@@ -38,25 +43,23 @@ export class StandaloneProject extends Project {
 		});
 	}
 
-	watch() {
+	public watch() {
 		const stopSources = watchFiles(this.config.context, this.config.sources, async (changed, deleted) => {
-			await this.loadProjectData();
+			await this._loadProjectData();
 			for (const filename of changed) {
 				this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
 			}
 			for (const filename of deleted) {
 				this.removeSource(filename);
 			}
-			this.processSources();
-			await this.writeModified();
-			await this.writeOutput();
+			await this.processAndWrite();
+			await this.compileAndWrite();
 		});
 
 		const stopProjectData = watchFile(this.config.projectData, async exists => {
-			await this.loadProjectData();
-			this.processSources();
-			await this.writeModified();
-			await this.writeOutput();
+			await this._loadProjectData();
+			await this.processAndWrite();
+			await this.compileAndWrite();
 		});
 
 		return async () => {
@@ -65,7 +68,7 @@ export class StandaloneProject extends Project {
 		}
 	}
 
-	async writeOutput() {
+	public async compileAndWrite() {
 		const { resources } = await this.compile();
 		for (const [lang, resource] of resources) {
 			const filename = this.config.output.replace(/\[lang\]/g, lang);

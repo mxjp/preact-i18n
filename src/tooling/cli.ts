@@ -35,25 +35,19 @@ async function main() {
 
 	switch (command) {
 		case "start": {
-			await project.loadProjectData();
-			await project.loadSources();
-
-			project.processSources();
-			await project.writeModified();
-			await project.writeOutput();
-
+			await project.load();
+			await project.processAndWrite();
+			await project.compileAndWrite();
 			project.watch();
-
 			break;
 		}
 
 		case "compile": {
-			await project.loadProjectData();
-			await project.loadSources();
-
-			project.processSources();
-			await project.writeOutput();
-
+			await project.load();
+			if (!project.verify()) {
+				throw new Error("Sources and project data are out of sync.");
+			}
+			await project.compileAndWrite();
 			break;
 		}
 

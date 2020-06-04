@@ -16,7 +16,7 @@ export class Project {
 	/** Set of filename/id pairs */
 	private readonly _sourceIds = new PairSet<string, string>();
 	/** Map of filenames to source update results that have not been persisted yet. */
-	private readonly _modifiedSources = new Map<string, string>();
+	private readonly _modifiedSources = new Map<string, SourceFile.UpdateResult>();
 	/** Current project data. */
 	private _data: Project.Data = Project.Data.createEmpty();
 	/** Indicator if the project data has been modified. */
@@ -34,7 +34,7 @@ export class Project {
 	public updateSource(source: SourceFile) {
 		this._sources.set(source.filename, source);
 		this._unprocessedSources.add(source.filename);
-		this._sourceIds.setKey(source.filename, source.extract().values.keys());
+		this._sourceIds.setKey(source.filename, source.ids());
 	}
 
 	public removeSource(filename: string) {
@@ -44,7 +44,47 @@ export class Project {
 		this._modifiedSources.delete(filename);
 	}
 
-	public processSources() {
+	public verify() {
+		if (this._modifiedSources.size > 0 || this._dataModified) {
+			throw new Error("unhandled modifications");
+		}
+
+		let valid = true;
+
+		const verifiedIds = new Set<string>();
+		for (const source of this._sources.values()) {
+			if (!source.verify({
+				verifyPair: (id, value) => {
+					if (verifiedIds.has(id)) {
+						// TODO: Emit diagnostic.
+						return false;
+					}
+					verifiedIds.add(id);
+
+					if (!(id in this._data.values) || this._data.values[id].value !== value) {
+						// TODO: Emit diagnostic.
+						return false;
+					}
+
+					return true;
+				}
+			})) {
+				valid = false;
+			}
+		}
+
+		for (const id in this._data.values) {
+			if (!verifiedIds.has(id)) {
+				// TODO: Emit diagnostic.
+				valid = false;
+			}
+		}
+
+		return valid;
+	}
+
+	public async processSources(context: Project.SourceProcessingContext) {
+		// Update sources:
 		let nextId = 0;
 		const updatedIds = new Set<string>();
 
@@ -55,26 +95,32 @@ export class Project {
 					if (id === undefined || updatedIds.has(id)) {
 						do {
 							id = String(nextId++);
-						} while (this._sourceIds.hasValue(id));
+						} while (this._sourceIds.hasValue(id) || updatedIds.has(id));
 					}
 					updatedIds.add(id);
 					return id;
 				}
 			});
+			if (result.changed) {
+				this._modifiedSources.set(filename, result);
+			}
+			this._unprocessedSources.delete(filename);
+		}
+
+		// Write changed sources to disk and adjust project data:
+		for (const [filename, result] of this._modifiedSources) {
+			await context.writeSource(filename, result.sourceText);
+			this._modifiedSources.delete(filename);
 
 			for (const [id, value] of result.values) {
 				if (value !== undefined && Project.Data.updateValue(this._data, id, value)) {
 					this._dataModified = true;
 				}
 			}
-
 			this._sourceIds.setKey(filename, result.values.keys());
-
-			if (result.changed) {
-				this._modifiedSources.set(filename, result.sourceText);
-			}
 		}
 
+		// Remove values from project data that do not exist anymore:
 		for (const id in this._data.values) {
 			if (!this._sourceIds.hasValue(id)) {
 				delete this._data.values[id];
@@ -82,14 +128,7 @@ export class Project {
 			}
 		}
 
-		this._unprocessedSources.clear();
-	}
-
-	public async handleModified(context: Project.HandleModifiedContext) {
-		for (const [filename, sourceText] of this._modifiedSources) {
-			await context.writeSource(filename, sourceText);
-			this._modifiedSources.delete(filename);
-		}
+		// Write modified project data to disk:
 		if (this._dataModified) {
 			await context.writeProjectData(this._data);
 			this._dataModified = false;
@@ -126,7 +165,7 @@ export class Project {
 }
 
 export namespace Project {
-	export interface HandleModifiedContext {
+	export interface SourceProcessingContext {
 		writeSource(filename: string, sourceText: string): Promise<void> | void;
 		writeProjectData(data: Project.Data): Promise<void> | void;
 	}

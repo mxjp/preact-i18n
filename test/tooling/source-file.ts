@@ -4,20 +4,15 @@ import { SourceFile } from "../../src/tooling";
 
 const filename = path.join(__dirname, "test-source.jsx");
 
-test("extract", t => {
+test("ids", t => {
 	const sourceFile = new SourceFile(filename, `
 		<T value="foo" />
+		<T id="7" />
 		<T id="7" />
 		<T value="bar" id="42" />
 	`);
 
-	const result = sourceFile.extract();
-	t.deepEqual(result, {
-		values: new Map([
-			["7", undefined],
-			["42", "bar"]
-		])
-	})
+	t.deepEqual(sourceFile.ids(), new Set(["7", "42"]));
 });
 
 test("update", t => {

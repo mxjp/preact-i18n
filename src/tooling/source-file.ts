@@ -13,6 +13,10 @@ export class SourceFile {
 	public readonly sourceText: string;
 	public readonly source: ts.SourceFile;
 
+	public static isSourceFile(filename: string) {
+		return /\.[tj]sx$/i.test(filename);
+	}
+
 	public ids(): Set<string> {
 		const ids = new Set<string>();
 		(function traverse(this: SourceFile, node: ts.Node) {

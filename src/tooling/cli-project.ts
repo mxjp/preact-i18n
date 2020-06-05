@@ -21,7 +21,7 @@ export class CliProject extends Project {
 
 	private async _loadSources() {
 		for await (const filename of findFiles(this.config.context, this.config.sources)) {
-			if (/\.[jt]sx$/.test(filename)) {
+			if (SourceFile.isSourceFile(filename)) {
 				this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
 			}
 		}
@@ -47,10 +47,14 @@ export class CliProject extends Project {
 		const stopSources = watchFiles(this.config.context, this.config.sources, async (changed, deleted) => {
 			await this._loadProjectData();
 			for (const filename of changed) {
-				this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
+				if (SourceFile.isSourceFile(filename)) {
+					this.updateSource(new SourceFile(filename, await readFile(filename, "utf8")));
+				}
 			}
 			for (const filename of deleted) {
-				this.removeSource(filename);
+				if (SourceFile.isSourceFile(filename)) {
+					this.removeSource(filename);
+				}
 			}
 			await this.processAndWrite();
 			await this.compileAndWrite();

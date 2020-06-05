@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { readFile } from "fs/promises";
 import * as parseArgv from "minimist";
+import { parse } from "json5";
 import { Config } from "./config";
-import { StandaloneProject } from "./standalone-project";
+import { CliProject } from "./cli-project";
 
 async function main() {
 	const argv = process.argv.slice(2);
@@ -26,12 +28,13 @@ async function main() {
 		console.log("Using config file:", configFilename);
 	}
 
-	const config = await Config.read(configFilename);
+	const configData = parse(await readFile(configFilename, "utf8"));
+	const config = Config.fromJson(configData, dirname(configFilename));
 	if (args.verbose) {
 		console.log("Using config:", config);
 	}
 
-	const project = new StandaloneProject(config);
+	const project = new CliProject(config);
 
 	switch (command) {
 		case "start": {

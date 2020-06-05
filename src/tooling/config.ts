@@ -1,6 +1,4 @@
-import { dirname, resolve } from "path";
-import { parse } from "json5";
-import { readFile } from "fs/promises";
+import { resolve } from "path";
 
 export interface Config {
 	readonly context: string;
@@ -40,10 +38,5 @@ export namespace Config {
 			sources,
 			output
 		};
-	}
-
-	export async function read(filename: string) {
-		filename = resolve(filename);
-		return fromJson(parse(await readFile(filename, "utf8")), dirname(filename));
 	}
 }

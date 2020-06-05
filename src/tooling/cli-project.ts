@@ -1,10 +1,10 @@
-import { Project } from "./project";
 import { dirname } from "path";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
 import { findFiles, watchFiles, watchFile } from "./util/files";
 import { SourceFile } from "./source-file";
+import { Project } from "./project";
 
-export class StandaloneProject extends Project {
+export class CliProject extends Project {
 	private _projectDataMtime: number | undefined = undefined;
 
 	private async _loadProjectData() {

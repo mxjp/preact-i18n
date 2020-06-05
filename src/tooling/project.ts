@@ -15,12 +15,8 @@ export class Project {
 	private readonly _unprocessedSources = new Set<string>();
 	/** Set of filename/id pairs */
 	private readonly _sourceIds = new PairSet<string, string>();
-	/** Map of filenames to source update results that have not been persisted yet. */
-	private readonly _modifiedSources = new Map<string, SourceFile.UpdateResult>();
 	/** Current project data. */
 	private _data: Project.Data = Project.Data.createEmpty();
-	/** Indicator if the project data has been modified. */
-	private _dataModified = false;
 
 	public get data() {
 		return this._data;
@@ -28,7 +24,6 @@ export class Project {
 
 	public set data(value: Project.Data) {
 		this._data = value;
-		this._dataModified = false;
 	}
 
 	public updateSource(source: SourceFile) {
@@ -41,14 +36,9 @@ export class Project {
 		this._sources.delete(filename);
 		this._unprocessedSources.delete(filename);
 		this._sourceIds.deleteKey(filename);
-		this._modifiedSources.delete(filename);
 	}
 
 	public verify() {
-		if (this._modifiedSources.size > 0 || this._dataModified) {
-			throw new Error("unhandled modifications");
-		}
-
 		let valid = true;
 
 		const verifiedIds = new Set<string>();
@@ -87,6 +77,7 @@ export class Project {
 		// Update sources:
 		let nextId = 0;
 		const updatedIds = new Set<string>();
+		const updateResults = new Map<string, SourceFile.UpdateResult>();
 
 		for (const filename of this._unprocessedSources) {
 			let source = this._sources.get(filename)!;
@@ -101,20 +92,22 @@ export class Project {
 					return id;
 				}
 			});
-			if (result.changed) {
-				this._modifiedSources.set(filename, result);
-			}
+			updateResults.set(filename, result);
 			this._unprocessedSources.delete(filename);
 		}
 
 		// Write changed sources to disk and adjust project data:
-		for (const [filename, result] of this._modifiedSources) {
-			await context.writeSource(filename, result.sourceText);
-			this._modifiedSources.delete(filename);
+		let dataModified = false;
+		for (const [filename, result] of updateResults) {
+			if (result.changed) {
+				await context.writeSource(filename, result.sourceText);
+			}
+
+			updateResults.delete(filename);
 
 			for (const [id, value] of result.values) {
 				if (value !== undefined && Project.Data.updateValue(this._data, id, value)) {
-					this._dataModified = true;
+					dataModified = true;
 				}
 			}
 			this._sourceIds.setKey(filename, result.values.keys());
@@ -124,22 +117,17 @@ export class Project {
 		for (const id in this._data.values) {
 			if (!this._sourceIds.hasValue(id)) {
 				delete this._data.values[id];
-				this._dataModified = true;
+				dataModified = true;
 			}
 		}
 
 		// Write modified project data to disk:
-		if (this._dataModified) {
+		if (dataModified) {
 			await context.writeProjectData(this._data);
-			this._dataModified = false;
 		}
 	}
 
 	public async compile() {
-		if (this._modifiedSources.size > 0 || this._dataModified) {
-			throw new Error("unhandled modifications");
-		}
-
 		const resources = new Map<string, Project.LanguageResources>();
 
 		const { values } = this._data;

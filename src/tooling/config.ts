@@ -6,6 +6,7 @@ export interface Config {
 	readonly namespace: string;
 	readonly sources: string[];
 	readonly output: string;
+	readonly languages: string[];
 }
 
 export namespace Config {
@@ -14,6 +15,7 @@ export namespace Config {
 		readonly namespace?: string;
 		readonly sources?: string[];
 		readonly output?: string;
+		readonly languages?: string[];
 	}
 
 	export function fromJson(json: Json, context: string): Config {
@@ -31,12 +33,18 @@ export namespace Config {
 
 		const output = resolve(json.output ?? "dist/lang/[lang].json");
 
+		const languages = json.languages ?? [];
+		if (!Array.isArray(languages) || !languages.every(s => typeof s === "string")) {
+			throw new TypeError("config.languages must be an array of strings.");
+		}
+
 		return {
 			context,
 			projectData,
 			namespace,
 			sources,
-			output
+			output,
+			languages
 		};
 	}
 }

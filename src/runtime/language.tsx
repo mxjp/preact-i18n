@@ -33,7 +33,7 @@ export class Language {
 export namespace Language {
 	export interface Options {
 		readonly name: string;
-		readonly resources: Resources;
+		readonly resources?: Resources;
 	}
 
 	export interface Resources {
@@ -42,22 +42,32 @@ export namespace Language {
 		};
 	}
 
+	export namespace Resources {
+		export function parse(data: string): Resources {
+			return JSON.parse(data);
+		}
+	}
+
 	export class Provider extends Component<Provider.Props, Provider.State> {
-		public constructor() {
+		public constructor(props?: Provider.Props) {
 			super();
-			// TODO: Set current language.
+			this.state = {
+				language: props?.use?.language || null
+			};
 		}
 
-		private readonly handleLanguageChange: I18n.LanguageChangeHandler = language => {
-			this.setState({ language });
+		private readonly handleLanguageChange: I18n.UpdateHandler = controller => {
+			this.setState({
+				language: controller.language
+			});
 		};
 
 		public componentDidMount() {
-			this.props.use.addLanguageChangeHandler(this.handleLanguageChange);
+			this.props.use.addUpdateHandler(this.handleLanguageChange);
 		}
 
 		public componentWillUnmount() {
-			this.props.use.removeLanguageChangeHandler(this.handleLanguageChange);
+			this.props.use.removeUpdateHandler(this.handleLanguageChange);
 		}
 
 		public render(props: Provider.Props, state: Provider.State) {
@@ -74,7 +84,7 @@ export namespace Language {
 		}
 
 		export interface State {
-			readonly language: Language;
+			readonly language: Language | null;
 		}
 	}
 

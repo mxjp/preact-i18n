@@ -101,7 +101,8 @@ test("workflow", async t => {
 	t.true(dataWritten);
 
 	const { resources } = await project.compile();
-	t.is(resources.size, 1);
+	t.is(resources.size, 2);
+	t.true(resources.has("en"));
 	t.is(resources.get("de")!["app"]["7"], undefined);
 	t.is(resources.get("de")!["app"]["8"], "y");
 });

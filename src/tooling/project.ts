@@ -180,7 +180,7 @@ export namespace Project {
 			return JSON.stringify(data, null, "\t") + "\n";
 		}
 
-		export function parse(value: string) {
+		export function parse(value: string): Data {
 			return JSON.parse(value);
 		}
 
@@ -222,7 +222,7 @@ export namespace Project {
 				: JSON.stringify(resources, null, "\t") + "\n";
 		}
 
-		export function parse(value: string) {
+		export function parse(value: string): LanguageResources {
 			return JSON.parse(value);
 		}
 

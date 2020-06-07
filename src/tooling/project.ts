@@ -176,6 +176,14 @@ export namespace Project {
 	}
 
 	export namespace Data {
+		export function stringify(data: Data) {
+			return JSON.stringify(data, null, "\t") + "\n";
+		}
+
+		export function parse(value: string) {
+			return JSON.parse(value);
+		}
+
 		export function createEmpty(): Data {
 			return {
 				values: Object.create(null)
@@ -208,6 +216,16 @@ export namespace Project {
 	}
 
 	export namespace LanguageResources {
+		export function stringify(resources: LanguageResources, minify = true) {
+			return minify
+				? JSON.stringify(resources)
+				: JSON.stringify(resources, null, "\t") + "\n";
+		}
+
+		export function parse(value: string) {
+			return JSON.parse(value);
+		}
+
 		export function createEmpty(): LanguageResources {
 			return Object.create(null);
 		}

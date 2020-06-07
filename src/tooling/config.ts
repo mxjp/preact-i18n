@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import { parse as parseJson5 } from "json5";
 
 export interface Config {
 	readonly context: string;
@@ -16,6 +17,10 @@ export namespace Config {
 		readonly sources?: string[];
 		readonly output?: string;
 		readonly languages?: string[];
+	}
+
+	export function parse(value: string, context: string) {
+		return fromJson(parseJson5(value), context);
 	}
 
 	export function fromJson(json: Json, context: string): Config {

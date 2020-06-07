@@ -7,6 +7,7 @@ export interface Config {
 	readonly namespace: string;
 	readonly sources: string[];
 	readonly output: string;
+	readonly sourceLanguage: string;
 	readonly languages: string[];
 }
 
@@ -16,6 +17,7 @@ export namespace Config {
 		readonly namespace?: string;
 		readonly sources?: string[];
 		readonly output?: string;
+		readonly sourceLanguage?: string;
 		readonly languages?: string[];
 	}
 
@@ -31,12 +33,17 @@ export namespace Config {
 			throw new TypeError("config.namespace must be a string.");
 		}
 
-		const sources = json.sources ?? ["**"];
+		const sources = json.sources ?? ["./src/**"];
 		if (!Array.isArray(sources) || !sources.every(s => typeof s === "string")) {
 			throw new TypeError("config.sources must be an array of strings.");
 		}
 
 		const output = resolve(json.output ?? "dist/lang/[lang].json");
+
+		const sourceLanguage = json.sourceLanguage ?? "en";
+		if (typeof sourceLanguage !== "string") {
+			throw new TypeError("config.sourceLanguage must be a string.");
+		}
 
 		const languages = json.languages ?? [];
 		if (!Array.isArray(languages) || !languages.every(s => typeof s === "string")) {
@@ -49,6 +56,7 @@ export namespace Config {
 			namespace,
 			sources,
 			output,
+			sourceLanguage,
 			languages
 		};
 	}

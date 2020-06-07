@@ -146,6 +146,15 @@ export class Project {
 			}
 		}
 
+		if (!resources.has(this.config.sourceLanguage)) {
+			resources.set(this.config.sourceLanguage, Project.LanguageResources.createEmpty());
+		}
+		for (const name of this.config.languages) {
+			if (!resources.has(name)) {
+				resources.set(name, Project.LanguageResources.createEmpty());
+			}
+		}
+
 		// TODO: For application builds, add external language resources.
 
 		return { resources };

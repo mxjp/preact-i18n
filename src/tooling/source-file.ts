@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as ts from "typescript";
 import * as stringEscape from "js-string-escape";
+import { binarySearchIndex, binarySearch } from "./util/binary-search";
 
 export class SourceFile {
 	public constructor(filename: string, sourceText: string) {
@@ -12,6 +13,10 @@ export class SourceFile {
 	public readonly filename: string;
 	public readonly sourceText: string;
 	public readonly source: ts.SourceFile;
+
+	private _lineMap: number[] | undefined = undefined;
+	private _fragmentMap: ReadonlyMap<string, SourceFile.Fragment> | undefined = undefined;
+	private _fragments: SourceFile.Fragment[] | undefined = undefined;
 
 	public static isSourceFile(filename: string) {
 		return /\.[tj]sx$/i.test(filename);
@@ -52,22 +57,50 @@ export class SourceFile {
 		return valid;
 	}
 
-	public fragments() {
-		const fragments = new Map<string, SourceFile.Range>();
-		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
-				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
-				if (typeof id === "string") {
-					const text = this.sourceText.slice(node.pos, node.end);
-					fragments.set(id, {
-						pos: node.pos + leadingSpace(text).length,
-						end: node.end - trailingSpace(text).length
-					});
+	public get fragmentsById() {
+		if (this._fragmentMap === undefined) {
+			const fragmentMap = new Map<string, SourceFile.Fragment>();
+			(function traverse(this: SourceFile, node: ts.Node) {
+				if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+					const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
+					if (typeof id === "string") {
+						const text = this.sourceText.slice(node.pos, node.end);
+						fragmentMap.set(id, {
+							id,
+							start: node.pos + leadingSpace(text).length,
+							end: node.end - trailingSpace(text).length
+						});
+					}
 				}
-			}
-			ts.forEachChild(node, n => traverse.call(this, n));
-		}).call(this, this.source);
-		return fragments;
+				ts.forEachChild(node, n => traverse.call(this, n));
+			}).call(this, this.source);
+			this._fragmentMap = fragmentMap;
+		}
+		return this._fragmentMap;
+	}
+
+	public get fragments() {
+		if (this._fragments === undefined) {
+			this._fragments = Array.from(this.fragmentsById.values());
+		}
+		return this._fragments;
+	}
+
+	public fragmentAt(offset: number) {
+		return binarySearch(this.fragments, fragment => {
+			return fragment.end <= offset ? 1 : (fragment.start > offset ? -1 : 0);
+		});
+	}
+
+	public fragmentsAt(start: number, end: number) {
+		const fragments = this.fragments;
+		const startIndex = binarySearchIndex(this.fragments, (fragment, index) => {
+			return fragment.end <= start ? 1 : (index > 0 && fragments[index - 1].end > start ? -1 : 0);
+		});
+		const endIndex = binarySearchIndex(this.fragments, (fragment, index) => {
+			return fragment.start > end ? -1 : (index < fragments.length - 1 && fragments[index + 1].start <= end ? 1 : 0);
+		});
+		return (startIndex === undefined || endIndex === undefined) ? [] : this.fragments.slice(startIndex, endIndex + 1);
 	}
 
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
@@ -117,6 +150,31 @@ export class SourceFile {
 			values
 		};
 	}
+
+	public get lineMap() {
+		if (this._lineMap === undefined) {
+			const map: number[] = [0];
+			let offset = -1;
+			while ((offset = this.sourceText.indexOf("\n",  offset + 1)) !== -1) {
+				map.push(offset + 1);
+			}
+			this._lineMap = map;
+		}
+		return this._lineMap;
+	}
+
+	public positionToOffset(pos: SourceFile.Position) {
+		return this.lineMap[pos.line] + pos.character;
+	}
+
+	public offsetToPosition(offset: number): SourceFile.Position | undefined {
+		const { lineMap, sourceText } = this;
+		const line = binarySearchIndex(lineMap, (start, line, lineMap) => {
+			const end = line === lineMap.length - 1 ? sourceText.length : lineMap[line + 1];
+			return offset < start ? -1 : (offset >= end ? 1 : 0);
+		});
+		return line === undefined ? undefined : { line, character: offset - lineMap[line] };
+	}
 }
 
 function getJsxAttribute(attributes: ts.JsxAttributes, name: string) {
@@ -150,8 +208,14 @@ export namespace SourceFile {
 		verifyPair(id: string, value: string | undefined): boolean;
 	}
 
-	export interface Range {
-		readonly pos: number;
+	export interface Position {
+		readonly line: number;
+		readonly character: number;
+	}
+
+	export interface Fragment {
+		readonly id: string;
+		readonly start: number;
 		readonly end:  number;
 	}
 

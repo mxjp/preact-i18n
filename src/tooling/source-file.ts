@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as ts from "typescript";
 import * as stringEscape from "js-string-escape";
-import { binarySearchIndex, binarySearch } from "./util/binary-search";
+import { binarySearchIndex, binarySearch } from "./utility/binary-search";
 
 export class SourceFile {
 	public constructor(filename: string, sourceText: string) {

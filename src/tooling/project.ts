@@ -1,5 +1,5 @@
 import { SourceFile } from "./source-file";
-import { PairSet } from "./util/pair-set";
+import { PairSet } from "./utility/pair-set";
 import { Config } from "./config";
 
 export class Project {
@@ -185,6 +185,10 @@ export namespace Project {
 	}
 
 	export namespace Data {
+		export function now() {
+			return new Date().toISOString();
+		}
+
 		export function stringify(data: Data) {
 			return JSON.stringify(data, null, "\t") + "\n";
 		}
@@ -203,14 +207,14 @@ export namespace Project {
 			if (id in data.values) {
 				if (data.values[id].value !== value) {
 					data.values[id].value = value;
-					data.values[id].lastModified = new Date().toISOString();
+					data.values[id].lastModified = now();
 					return true;
 				}
 			} else {
 				data.values[id] = {
 					value,
-					lastModified: new Date().toISOString(),
-					translations: {}
+					lastModified: now(),
+					translations: Object.create(null)
 				};
 				return true;
 			}

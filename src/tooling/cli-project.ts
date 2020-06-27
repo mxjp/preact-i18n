@@ -1,6 +1,6 @@
 import { dirname } from "path";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
-import { findFiles, watchFiles, watchFile } from "./util/files";
+import { findFiles, watchFiles, watchFile } from "./utility/files";
 import { SourceFile } from "./source-file";
 import { Project } from "./project";
 

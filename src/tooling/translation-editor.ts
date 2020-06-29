@@ -19,7 +19,25 @@ export class TranslationEditor {
 	public constructor(public readonly project: Project) {
 	}
 
-	private readonly _updates = new Map<string, Map<string, TranslationUpdate>>();
+	private readonly _updates = new Map<string, Map<string, TranslationEditor.Update>>();
+
+	public getTranslationSet(id: string) {
+		if (id in this.project.data.values) {
+			const data: Project.TranslationSet = JSON.parse(JSON.stringify(this.project.data.values));
+			const updates = this._updates.get(id);
+			if (updates !== undefined) {
+				for (const [language, update] of updates) {
+					if (data.lastModified === update.sourceLastModified) {
+						data.translations[language] = {
+							lastModified: update.lastModified,
+							value: update.value
+						};
+					}
+				}
+			}
+			return data;
+		}
+	}
 
 	public set(id: string, language: string, value: string) {
 		let updates = this._updates.get(id);
@@ -29,28 +47,30 @@ export class TranslationEditor {
 		const translationSet = this.project.data.values[id];
 		updates.set(language, {
 			sourceLastModified: translationSet ? translationSet.lastModified : undefined,
-			value
+			value,
+			lastModified: Project.Data.now()
 		});
 	}
 
 	public applyUpdates() {
-		const now = Project.Data.now();
+		let hasChanges = false;
 		const values = this.project.data.values;
 		for (const [id, updates] of this._updates) {
 			const translationSet = values[id];
 			if (translationSet) {
 				for (const [language, update] of updates) {
 					if (update.sourceLastModified === translationSet.lastModified) {
+						hasChanges = true;
 						translationSet.translations[language] = {
 							value: update.value,
-							lastModified: now
+							lastModified: update.lastModified
 						};
 					}
 				}
 			}
 		}
-
 		this._updates.clear();
+		return hasChanges;
 	}
 
 	public discardUpdates() {
@@ -58,7 +78,10 @@ export class TranslationEditor {
 	}
 }
 
-interface TranslationUpdate {
-	readonly sourceLastModified: string | undefined;
-	readonly value: string;
+export namespace TranslationEditor {
+	export interface Update {
+		readonly sourceLastModified: string | undefined;
+		readonly value: string;
+		readonly lastModified: string;
+	}
 }

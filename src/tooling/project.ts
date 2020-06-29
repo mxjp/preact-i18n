@@ -18,6 +18,10 @@ export class Project {
 	/** Current project data. */
 	private _data: Project.Data = Project.Data.createEmpty();
 
+	public get sources(): ReadonlyMap<string, SourceFile> {
+		return this._sources;
+	}
+
 	public get data() {
 		return this._data;
 	}

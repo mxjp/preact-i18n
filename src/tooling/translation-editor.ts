@@ -23,7 +23,7 @@ export class TranslationEditor {
 
 	public getTranslationSet(id: string) {
 		if (id in this.project.data.values) {
-			const data: Project.TranslationSet = JSON.parse(JSON.stringify(this.project.data.values));
+			const data: Project.TranslationSet = JSON.parse(JSON.stringify(this.project.data.values[id]));
 			const updates = this._updates.get(id);
 			if (updates !== undefined) {
 				for (const [language, update] of updates) {
@@ -52,8 +52,10 @@ export class TranslationEditor {
 		});
 	}
 
-	public applyUpdates() {
+	public applyUpdates(): TranslationEditor.ApplyResult {
 		let hasChanges = false;
+		let hasDiscarded = false;
+
 		const values = this.project.data.values;
 		for (const [id, updates] of this._updates) {
 			const translationSet = values[id];
@@ -65,12 +67,16 @@ export class TranslationEditor {
 							value: update.value,
 							lastModified: update.lastModified
 						};
+					} else {
+						hasDiscarded = true;
 					}
 				}
+			} else {
+				hasDiscarded = true;
 			}
 		}
 		this._updates.clear();
-		return hasChanges;
+		return { hasChanges, hasDiscarded };
 	}
 
 	public discardUpdates() {
@@ -83,5 +89,10 @@ export namespace TranslationEditor {
 		readonly sourceLastModified: string | undefined;
 		readonly value: string;
 		readonly lastModified: string;
+	}
+
+	export interface ApplyResult {
+		readonly hasChanges: boolean;
+		readonly hasDiscarded: boolean;
 	}
 }

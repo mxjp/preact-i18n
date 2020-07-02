@@ -49,7 +49,7 @@ The context also exposes the text fragment component that translates texts insid
 ```ts
 // src/i18n.ts
 
-import { I18nContext } from "preact-i18n-stack";
+import { I18nContext } from "@mpt/preact-i18n";
 
 const { T } = I18nContext.create({
     // The namespace of this package:

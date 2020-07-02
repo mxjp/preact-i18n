@@ -38,7 +38,7 @@ export namespace Config {
 			throw new TypeError("config.sources must be an array of strings.");
 		}
 
-		const output = resolve(json.output ?? "dist/lang/[lang].json");
+		const output = resolve(context, json.output ?? "dist/lang/[lang].json");
 
 		const sourceLanguage = json.sourceLanguage ?? "en";
 		if (typeof sourceLanguage !== "string") {

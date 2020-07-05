@@ -1,7 +1,7 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"main": "./dist/runtime/index.js",
 	"scripts": {
 		"clean": "rimraf dist/**/*",

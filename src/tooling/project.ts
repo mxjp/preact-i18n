@@ -1,6 +1,7 @@
 import { SourceFile } from "./source-file";
 import { PairSet } from "./utility/pair-set";
 import { Config } from "./config";
+import { Diagnostic } from "./diagnostic";
 
 export class Project {
 	public constructor(config: Config) {
@@ -42,6 +43,13 @@ export class Project {
 		this._sourceIds.deleteKey(filename);
 	}
 
+	public getSourceForId(id: string) {
+		const filename = this._sourceIds.getAnyKey(id);
+		if (filename) {
+			return this._sources.get(filename);
+		}
+	}
+
 	public verify() {
 		let valid = true;
 
@@ -50,13 +58,11 @@ export class Project {
 			if (!source.verify({
 				verifyPair: (id, value) => {
 					if (verifiedIds.has(id)) {
-						// TODO: Emit diagnostic.
 						return false;
 					}
 					verifiedIds.add(id);
 
 					if (!(id in this._data.values) || this._data.values[id].value !== value) {
-						// TODO: Emit diagnostic.
 						return false;
 					}
 
@@ -69,7 +75,6 @@ export class Project {
 
 		for (const id in this._data.values) {
 			if (!verifiedIds.has(id)) {
-				// TODO: Emit diagnostic.
 				valid = false;
 			}
 		}
@@ -138,14 +143,14 @@ export class Project {
 		for (const id in values) {
 			const { translations, lastModified } = values[id];
 			const lastModifiedTime = Date.parse(lastModified);
-			for (const name in translations) {
-				let language = resources.get(name);
+			for (const languageName in translations) {
+				let language = resources.get(languageName);
 				if (language === undefined) {
 					language = Project.LanguageResources.createEmpty();
-					resources.set(name, language);
+					resources.set(languageName, language);
 				}
-				if (lastModifiedTime <= Date.parse(translations[name].lastModified)) {
-					Project.LanguageResources.setValue(language, this.config.namespace, id, translations[name].value);
+				if (lastModifiedTime <= Date.parse(translations[languageName].lastModified)) {
+					Project.LanguageResources.setValue(language, this.config.namespace, id, translations[languageName].value);
 				}
 			}
 		}
@@ -162,6 +167,26 @@ export class Project {
 		// TODO: For application builds, add external language resources.
 
 		return { resources };
+	}
+
+	public getDiagnostics() {
+		const diagnostics: Diagnostic[] = [];
+		const { values } = this._data;
+		for (const id in values) {
+			const { translations, lastModified } = values[id];
+			const lastModifiedTime = Date.parse(lastModified);
+			for (const language of this.config.languages) {
+				if (language in translations) {
+					if (lastModifiedTime > Date.parse(translations[language].lastModified)) {
+						diagnostics.push({ type: Diagnostic.Type.OutdatedTranslation, id, language });
+					}
+				} else {
+					diagnostics.push({ type: Diagnostic.Type.MissingTranslation, id, language });
+				}
+			}
+			// TODO: Emit diagnostics for non configured entries.
+		}
+		return diagnostics;
 	}
 }
 

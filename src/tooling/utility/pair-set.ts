@@ -34,6 +34,13 @@ export class PairSet<K, V> {
 	public hasValue(value: V) {
 		return this._values.has(value);
 	}
+
+	public getAnyKey(value: V) {
+		const keys = this._values.get(value);
+		if (keys) {
+			return keys[Symbol.iterator]().next().value as K | undefined;
+		}
+	}
 }
 
 function add<K, V>(map: Map<K, Set<V>>, key: K, value: V) {

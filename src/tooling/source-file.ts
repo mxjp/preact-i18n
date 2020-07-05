@@ -44,11 +44,9 @@ export class SourceFile {
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
 					if (!context.verifyPair(id, value)) {
-						// TODO: Emit diagnostic.
 						valid = false;
 					}
 				} else if (id !== undefined) {
-					// TODO: Emit diagnostic.
 					valid = false;
 				}
 			}

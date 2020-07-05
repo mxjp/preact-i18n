@@ -1,15 +1,20 @@
 import test from "ava";
 import * as path from "path";
 import { Project, SourceFile, Config } from "../../src/tooling";
+import { Diagnostic } from "../../src/tooling/diagnostic";
 
 const config = Config.fromJson({
-	namespace: "app"
+	namespace: "app",
+	languages: [
+		"de"
+	]
 }, __dirname);
 
 const filenameA = path.join(__dirname, "test-source-a.jsx");
 const filenameB = path.join(__dirname, "test-source-b.jsx");
 
 const lastModified = new Date(Date.now() - 1000).toISOString();
+const lastModifiedOutdated = new Date(Date.now() - 2000).toISOString();
 
 test("workflow", async t => {
 	const project = new Project(config);
@@ -201,4 +206,42 @@ test("verify (value missmatch)", t => {
 	`));
 
 	t.false(project.verify());
+});
+
+test("diagnostics", t => {
+	const project = new Project(config);
+
+	project.data = {
+		values: {
+			"1": { value: "b", lastModified, translations: {
+				"de": { value: "b", lastModified }
+			} },
+			"2": { value: "b", lastModified, translations: {
+				"de": { value: "b", lastModified: lastModifiedOutdated }
+			} },
+			"3": { value: "b", lastModified, translations: {
+			} }
+		}
+	};
+
+	const source = new SourceFile(filenameA, `
+		<T value="a" id="1" />
+		<T value="b" id="2" />
+		<T value="c" id="3" />
+		<T value="d" id="4" />
+	`);
+	project.updateSource(source);
+
+	t.is(project.getSourceForId("1"), source);
+	t.is(project.getSourceForId("2"), source);
+	t.is(project.getSourceForId("3"), source);
+	t.is(project.getSourceForId("4"), source);
+	t.is(project.getSourceForId("5"), undefined);
+
+	t.deepEqual(project.getDiagnostics(), [
+		{ type: Diagnostic.Type.OutdatedTranslation, id: "2", language: "de" },
+		{ type: Diagnostic.Type.MissingTranslation, id: "3", language: "de" }
+	]);
+
+	t.pass();
 });

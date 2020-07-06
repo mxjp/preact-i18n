@@ -113,6 +113,6 @@ preact-i18n compile
 
 ## Writing Translations
 Translations are written by editing the project's translation data file (`i18n-data.json`)<br>
-It is recommended to use a specialized editor for writing translations like [this vscode extension](https://github.com/mxjp/preact-i18n-vscode).
+It is recommended to use a specialized editor for writing translations like [this vscode extension](https://marketplace.visualstudio.com/items?itemName=mxjp.preact-i18n-vscode).
 
 <br>

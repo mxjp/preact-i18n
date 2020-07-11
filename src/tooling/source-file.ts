@@ -14,6 +14,8 @@ export class SourceFile {
 	public readonly sourceText: string;
 	public readonly source: ts.SourceFile;
 
+	private readonly _componentNames = new Set<string>(["T", "TX"]);
+
 	private _lineMap: number[] | undefined = undefined;
 	private _fragmentMap: ReadonlyMap<string, SourceFile.Fragment> | undefined = undefined;
 	private _fragments: SourceFile.Fragment[] | undefined = undefined;
@@ -25,7 +27,7 @@ export class SourceFile {
 	public ids(): Set<string> {
 		const ids = new Set<string>();
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				if (typeof id === "string") {
 					ids.add(id);
@@ -39,7 +41,7 @@ export class SourceFile {
 	public verify(context: SourceFile.VerifyContext) {
 		let valid = true;
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
@@ -59,7 +61,7 @@ export class SourceFile {
 		if (this._fragmentMap === undefined) {
 			const fragmentMap = new Map<string, SourceFile.Fragment>();
 			(function traverse(this: SourceFile, node: ts.Node) {
-				if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+				if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 					const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 					if (typeof id === "string") {
 						const text = this.sourceText.slice(node.pos, node.end);
@@ -105,7 +107,7 @@ export class SourceFile {
 		const rewrites: [number, number, string][] = [];
 		const values = new Map<string, string | undefined>();
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && node.tagName.text === "T") {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 				const idAttribute = getJsxAttribute(node.attributes, "id");
 				const id = parseValue(idAttribute?.initializer);
 				const updatedId = context.updateId(typeof id === "string" ? id : undefined);

@@ -19,7 +19,7 @@ test("ids", t => {
 test("update", t => {
 	const sourceFile = new SourceFile(filename, code(`
 		<T value="foo" />
-		<T id="7" />
+		<TX id="7" />
 		<T value="bar" id="42" />
 	`));
 
@@ -35,7 +35,7 @@ test("update", t => {
 
 	t.is(result.sourceText, code(`
 		<T id="1" value="foo" />
-		<T id="3" />
+		<TX id="3" />
 		<T value="bar" id="5" />
 	`));
 });
@@ -43,26 +43,26 @@ test("update", t => {
 test("fragmentsById", t => {
 	const sourceFile = new SourceFile(filename, code(`
 		<T value="foo" />
-		<T id="7" />
+		<TX id="7" />
 		<T value="bar" id="42" />
 	`));
 
 	t.deepEqual(sourceFile.fragmentsById, new Map<string, SourceFile.Fragment>([
-		["7", { id: "7", start: 18, end: 30 }],
-		["42", { id: "42", start: 31, end: 56 }]
+		["7", { id: "7", start: 18, end: 31 }],
+		["42", { id: "42", start: 32, end: 57 }]
 	]));
 });
 
 test("fragments", t => {
 	const sourceFile = new SourceFile(filename, code(`
 		<T value="foo" />
-		<T id="7" />
+		<TX id="7" />
 		<T value="bar" id="42" />
 	`));
 
 	t.deepEqual(sourceFile.fragments, [
-		{ id: "7", start: 18, end: 30 },
-		{ id: "42", start: 31, end: 56 }
+		{ id: "7", start: 18, end: 31 },
+		{ id: "42", start: 32, end: 57 }
 	]);
 });
 

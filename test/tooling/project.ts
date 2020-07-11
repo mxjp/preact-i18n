@@ -51,23 +51,23 @@ test("workflow", async t => {
 
 	project.updateSource(new SourceFile(filenameA, `
 		<T value="foo" id="42" />
-		<T value="bar" id="42" />
+		<TX value="bar" id="42" />
 		<T value="a" id="7" />
 	`));
 
 	const sourceAOutput = `
 		<T value="foo" id="42" />
-		<T value="bar" id="0" />
+		<TX value="bar" id="0" />
 		<T value="a" id="7" />
 	`;
 
 	project.updateSource(new SourceFile(filenameB, `
-		<T value="a" id="7" />
+		<TX value="a" id="7" />
 		<T value="b" id="8" />
 	`));
 
 	const sourceBOutput = `
-		<T value="a" id="1" />
+		<TX value="a" id="1" />
 		<T value="b" id="8" />
 	`;
 
@@ -124,7 +124,7 @@ test("verify (valid)", t => {
 	};
 
 	project.updateSource(new SourceFile(filenameA, `
-		<T value="a" id="1" />
+		<TX value="a" id="1" />
 		<T value="b" id="2" />
 	`));
 
@@ -152,7 +152,7 @@ test("verify (duplicate id)", t => {
 	`));
 
 	project.updateSource(new SourceFile(filenameB, `
-		<T value="c" id="1" />
+		<TX value="c" id="1" />
 	`));
 
 	t.false(project.verify());
@@ -168,7 +168,7 @@ test("verify (missing data)", t => {
 	};
 
 	project.updateSource(new SourceFile(filenameA, `
-		<T value="a" id="1" />
+		<TX value="a" id="1" />
 		<T value="b" id="2" />
 	`));
 
@@ -220,6 +220,19 @@ test("diagnostics", t => {
 				"de": { value: "b", lastModified: lastModifiedOutdated }
 			} },
 			"3": { value: "b", lastModified, translations: {
+				"unknown": { value: "c", lastModified: lastModifiedOutdated }
+			} },
+			"4": { value: ["a", "b"], lastModified, translations: {
+				"de": { value: "c", lastModified }
+			} },
+			"5": { value: ["a"], lastModified, translations: {
+				"de": { value: ["c", "d"], lastModified }
+			} },
+			"6": { value: ["a", "b"], lastModified, translations: {
+				"de": { value: ["c"], lastModified }
+			} },
+			"7": { value: ["a", "b"], lastModified, translations: {
+				"de": { value: ["c", "d"], lastModified }
 			} }
 		}
 	};
@@ -240,8 +253,10 @@ test("diagnostics", t => {
 
 	t.deepEqual(project.getDiagnostics(), [
 		{ type: Diagnostic.Type.OutdatedTranslation, id: "2", language: "de" },
-		{ type: Diagnostic.Type.MissingTranslation, id: "3", language: "de" }
+		{ type: Diagnostic.Type.MissingTranslation, id: "3", language: "de" },
+		{ type: Diagnostic.Type.UnconfiguredTranslatedLanguage, id: "3", language: "unknown" },
+		{ type: Diagnostic.Type.TranslationTypeMissmatch, id: "4", language: "de" },
+		{ type: Diagnostic.Type.PluralFormCountMissmatch, id: "5", language: "en" },
+		{ type: Diagnostic.Type.PluralFormCountMissmatch, id: "6", language: "de" }
 	]);
-
-	t.pass();
 });

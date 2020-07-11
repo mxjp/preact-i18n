@@ -2,6 +2,7 @@ import { SourceFile } from "./source-file";
 import { PairSet } from "./utility/pair-set";
 import { Config } from "./config";
 import { Diagnostic } from "./diagnostic";
+import { plurals } from "./plural-meta";
 
 export class Project {
 	public constructor(config: Config) {
@@ -171,12 +172,37 @@ export class Project {
 
 	public getDiagnostics() {
 		const diagnostics: Diagnostic[] = [];
+		const { sourceLanguage, languages } = this.config;
+		const languageSet = new Set(languages);
+
+		const unknownLanguagePlurals = new Set<string>();
+		function checkLanguagePlural(id: string, language: string, actualCount: number) {
+			const expectedCount = plurals.getFormCount(language);
+			if (expectedCount === undefined) {
+				unknownLanguagePlurals.add(sourceLanguage);
+			} else if (expectedCount !== actualCount) {
+				diagnostics.push({ type: Diagnostic.Type.PluralFormCountMissmatch, id, language });
+			}
+		}
+
 		const { values } = this._data;
 		for (const id in values) {
-			const { translations, lastModified } = values[id];
+			const { translations, lastModified, value } = values[id];
 			const lastModifiedTime = Date.parse(lastModified);
-			for (const language of this.config.languages) {
+
+			const isPlural = Project.isPlural(value);
+			if (isPlural) {
+				checkLanguagePlural(id, sourceLanguage, value.length);
+			}
+
+			for (const language of languages) {
 				if (language in translations) {
+					if (Project.isPlural(translations[language].value) !== isPlural) {
+						diagnostics.push({ type: Diagnostic.Type.TranslationTypeMissmatch, id, language });
+					} else if (isPlural) {
+						checkLanguagePlural(id, language, translations[language].value.length);
+					}
+
 					if (lastModifiedTime > Date.parse(translations[language].lastModified)) {
 						diagnostics.push({ type: Diagnostic.Type.OutdatedTranslation, id, language });
 					}
@@ -184,8 +210,18 @@ export class Project {
 					diagnostics.push({ type: Diagnostic.Type.MissingTranslation, id, language });
 				}
 			}
-			// TODO: Emit diagnostics for non configured entries.
+
+			for (const language in translations) {
+				if (!languageSet.has(language)) {
+					diagnostics.push({ type: Diagnostic.Type.UnconfiguredTranslatedLanguage, id, language });
+				}
+			}
 		}
+
+		for (const language of unknownLanguagePlurals) {
+			diagnostics.push({ type: Diagnostic.Type.UnknownLanguagePlural, language });
+		}
+
 		return diagnostics;
 	}
 }

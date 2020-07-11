@@ -49,6 +49,7 @@ export class Language {
 	}
 
 	public static interpolate(value: string, fields: Language.InterpolationFields) {
+		// TODO: Remove escaping.
 		return value.replace(/(^\{|[^\\]\{)([^\}]*)\}/g, (_, pre: string, name: string) => {
 			return pre.slice(0, -1) + (fields[name] || "");
 		});

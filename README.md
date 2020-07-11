@@ -51,14 +51,14 @@ The context also exposes the text fragment component that translates texts insid
 
 import { I18nContext } from "@mpt/preact-i18n";
 
-const { T } = I18nContext.create({
+const { T, TX } = I18nContext.create({
     // The namespace of this package:
     namespace: "~",
     // The language, sources are written in:
     sourceLanguage: "en"
 });
 
-export { T };
+export { T, TX };
 ```
 
 ## Controller
@@ -90,6 +90,48 @@ await i18n.setLanguageAuto(["en", "de", "ch"], "en");
 render(<Language.Provider use={i18n}>
     <h1><T value="Hello World!" id="0"/></h1>
 </Language.Provider>, document.body);
+```
+
+<br>
+
+
+
+# Text Fragments
+There are two text fragment components for translation. One for just simple text and one for more complex things.
+```tsx
+<T value="Hello World!" />
+// Hello World!
+```
+
+## Pluralization
+```tsx
+<TX value={["Apple", "Apples"]} count={3} />
+// Apples
+
+<TX value={["Apple", "Apples"]} count={1} />
+// Apple
+```
+Note, that the number of forms depends on the language.
+
+## Interval Plurals
+Interval plurals are not yet supported.
+
+## Interpolation
+```tsx
+<TX value={["{count} apple", "{count} apples"]} count={7} fields={{ count: 7 }} />
+// 7 apples
+
+<TX value="Hello {name}!" fields={{ name: "World" }} />
+// Hello World!
+```
+
+Note, that interpolation brackets have no effect when the fields property is undefined.
+```tsx
+<TX value="Hello {name}!" />
+// Hello {name}!
+
+<TX value={["{count} apple", "{count} apples"]} count={7} />
+// {count} apples
 ```
 
 <br>

@@ -96,8 +96,8 @@ render(<Language.Provider use={i18n}>
 
 
 
-# Text Fragments
-There are two text fragment components for translation. One for just simple text and one for more complex things.
+# Text Components
+There are two types of text components. `<T>` for simple text and `<TX>` for more complex things.
 ```tsx
 <T value="Hello World!" />
 // Hello World!
@@ -111,7 +111,7 @@ There are two text fragment components for translation. One for just simple text
 <TX value={["Apple", "Apples"]} count={1} />
 // Apple
 ```
-Note, that the number of forms depends on the language.
+The number of forms depends on the language. You can lookup the number in [plurals.json5](./resources/plurals.json5).
 
 ## Interval Plurals
 Interval plurals are not yet supported.
@@ -124,15 +124,7 @@ Interval plurals are not yet supported.
 <TX value="Hello {name}!" fields={{ name: "World" }} />
 // Hello World!
 ```
-
-Note, that interpolation brackets have no effect when the fields property is undefined.
-```tsx
-<TX value="Hello {name}!" />
-// Hello {name}!
-
-<TX value={["{count} apple", "{count} apples"]} count={7} />
-// {count} apples
-```
+Note, that interpolation braces have no effect if the fields property is undefined.
 
 <br>
 
@@ -148,10 +140,6 @@ preact-i18n start
 # Run diagnostics and compile translations:
 preact-i18n compile
 ```
-
-<br>
-
-
 
 ## Writing Translations
 Translations are written by editing the project's translation data file (`i18n-data.json`)<br>

@@ -1,0 +1,151 @@
+/*
+	The following is a partial list of plural rules and their languages.
+	https://developer.mozilla.org/docs/Mozilla/Localization/Localization_and_Plurals
+
+	If a rule you need is missing, feel free to make a pull request :)
+*/
+
+[
+	{
+		languages: ["zh", "ja", "ko", "fa", "tr", "th", "lo"],
+		forms: [
+			"default"
+		]
+	},
+	{
+		languages: ["da", "nl", "en", "fo", "fy", "de", "no", "sv", "et", "fi", "hu", "eu", "el", "he", "it", "pt", "es", "ca"],
+		forms: [
+			{ is: [1] },
+			"default"
+		]
+	},
+	{
+		languages: ["fr", "pt_BR", "ln"],
+		forms: [
+			{ is: [0, 1] },
+			"default"
+		]
+	},
+	{
+		languages: ["lv"],
+		forms: [
+			{ modE1: [0] },
+			{ modE1: [1], exclude: [11] },
+			"default"
+		]
+	},
+	{
+		languages: ["gd"],
+		forms: [
+			{ is: [1, 11] },
+			{ is: [2, 12] },
+			{ is: [[3, 10], [13, 19]] },
+			"default"
+		]
+	},
+	{
+		languages: ["ro"],
+		forms: [
+			{ is: [1] },
+			{ is: [0], modE2: [[1, 19]] },
+			"default"
+		]
+	},
+	{
+		languages: ["lt"],
+		forms: [
+			{ modE1: [1], exclude: [11] },
+			{ modE1: [0], modE2: [[11, 19]] },
+			"default"
+		]
+	},
+	{
+		languages: ["be", "ru", "uk"],
+		forms: [
+			{ modE1: [1], exclude: [11] },
+			{ modE1: [[2, 4]], exclude: [[12, 14]] },
+			"default"
+		]
+	},
+	{
+		languages: ["sk", "cs"],
+		forms: [
+			{ is: [1] },
+			{ is: [[2, 4]] },
+			"default"
+		]
+	},
+	{
+		languages: ["pl"],
+		forms: [
+			{ is: [1] },
+			{ modE1: [[2, 4]], exclude: [[12, 14]] },
+			"default"
+		]
+	},
+	{
+		languages: ["sl", "sb"],
+		forms: [
+			{ modE2: [1] },
+			{ modE2: [2] },
+			{ modE2: [3, 4] },
+			"default"
+		]
+	},
+	{
+		languages: ["ar"],
+		forms: [
+			{ is: [1] },
+			{ is: [2] },
+			{ modE2: [[3, 10]] },
+			"default",
+			{ modE2: [[0, 2]], exclude: [0] },
+			{ is: [0] }
+		]
+	},
+	{
+		languages: ["mt"],
+		forms: [
+			{ is: [1] },
+			{ is: [0], modE2: [[1, 10]] },
+			{ modE2: [[11, 19]] },
+			"default"
+		]
+	},
+	{
+		languages: ["is", "mk"],
+		forms: [
+			{ modE1: [1], exclude: [11] },
+			"default"
+		]
+	},
+	{
+		languages: ["br"],
+		forms: [
+			{ modE1: [1], exclude: [11, 71, 91] },
+			{ modE1: [2], exclude: [12, 72, 92] },
+			{ modE1: [3, 4, 9], exclude: [13, 14, 19, 73, 74, 79, 93, 94, 99] },
+			{ modE6: [0], exclude: [0] },
+			"default"
+		]
+	},
+	{
+		languages: ["cy"],
+		forms: [
+			{ is: [0] },
+			{ is: [1] },
+			{ is: [2] },
+			{ is: [3] },
+			{ is: [6] },
+			"default"
+		]
+	},
+	{
+		languages: ["bs", "hr", "sr"],
+		forms: [
+			{ modE1: [1], exclude: [11] },
+			{ modE1: [[2, 4]], exclude: [[12, 14]] },
+			"default"
+		]
+	}
+]

@@ -1,6 +1,9 @@
+/.github
 /node_modules
+/resources
+/scripts
 /src
 /test
+/test_dist
 /ava.config.js
 /tsconfig*
-/.github

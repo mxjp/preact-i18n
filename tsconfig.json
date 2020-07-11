@@ -10,11 +10,13 @@
 			"node_modules/@types",
 			"src/types"
 		],
+		"removeComments": true,
 		"declaration": true,
 		"sourceMap": true
 	},
 	"include": [
 		"src",
-		"test"
+		"test",
+		"scripts"
 	]
 }

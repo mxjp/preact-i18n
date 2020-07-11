@@ -1,3 +1,7 @@
 /node_modules
-/dist
 /i18n-data.json
+/runtime
+/tooling
+/test_dist
+/src/runtime/plurals
+/src/tooling/plural-meta.ts

@@ -1,7 +1,7 @@
 
 export default {
 	files: [
-		"./dist/test/test/**/*"
+		"./test_dist/test/**/*"
 	],
 	concurrency: 4,
 	verbose: true

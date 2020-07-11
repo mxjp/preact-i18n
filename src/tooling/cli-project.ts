@@ -15,7 +15,7 @@ export class CliProject extends Project {
 		});
 		if (stats && this._projectDataMtime !== stats.mtimeMs) {
 			this._projectDataMtime = stats.mtimeMs;
-			this.data = JSON.parse(await readFile(this.config.projectData, "utf8"));
+			this.data = Project.Data.parse(await readFile(this.config.projectData, "utf8"));
 		}
 	}
 
@@ -35,7 +35,7 @@ export class CliProject extends Project {
 	public async processAndWrite() {
 		await this.processSources({
 			writeProjectData: data => {
-				return writeFile(this.config.projectData, JSON.stringify(data, null, "\t") + "\n", "utf8");
+				return writeFile(this.config.projectData, Project.Data.stringify(data));
 			},
 			writeSource: (filename, sourceText) => {
 				return writeFile(filename, sourceText, "utf8");
@@ -72,12 +72,12 @@ export class CliProject extends Project {
 		}
 	}
 
-	public async compileAndWrite() {
+	public async compileAndWrite(minify = true) {
 		const { resources } = await this.compile();
 		for (const [lang, resource] of resources) {
 			const filename = this.config.output.replace(/\[lang\]/g, lang);
 			await mkdir(dirname(filename), { recursive: true });
-			await writeFile(filename, JSON.stringify(resource, null, "\t") + "\n");
+			await writeFile(filename, Project.LanguageResources.stringify(resource, minify));
 		}
 	}
 }

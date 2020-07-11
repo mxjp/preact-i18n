@@ -7,10 +7,15 @@ export class Language {
 	public constructor(options: Language.Options) {
 		this.name = options.name;
 		this.resources = options.resources || {};
+		this._pluralProcessor = options.pluralProcessor;
+		this._interpolationProcessor = options.interpolationProcessor || Language.interpolate;
 	}
 
 	public readonly name: string;
 	public resources: Language.Resources;
+
+	private readonly _pluralProcessor?: Language.PluralProcessor;
+	private readonly _interpolationProcessor?: Language.InterpolationProcessor;
 
 	public addResources(resources: Language.Resources) {
 		for (const ns in resources) {
@@ -25,8 +30,28 @@ export class Language {
 		}
 	}
 
-	public t(namespace: string, id: string): string | undefined {
+	public t(namespace: string, id: string): string | string[] | undefined {
 		return this.resources[namespace]?.[id];
+	}
+
+	public pluralize(value: string[], count: number) {
+		if (this._pluralProcessor === undefined) {
+			throw new Error(`pluralization is not supported for language: ${this.name}`);
+		}
+		return this._pluralProcessor(value, count);
+	}
+
+	public interpolate(value: string, fields: Language.InterpolationFields) {
+		if (this._interpolationProcessor === undefined) {
+			throw new Error(`interpolation is not supported for language: ${this.name}`);
+		}
+		return this._interpolationProcessor(value, fields);
+	}
+
+	public static interpolate(value: string, fields: Language.InterpolationFields) {
+		return value.replace(/(^\{|[^\\]\{)([^\}]*)\}/g, (_, pre: string, name: string) => {
+			return pre.slice(0, -1) + (fields[name] || "");
+		});
 	}
 }
 
@@ -34,11 +59,25 @@ export namespace Language {
 	export interface Options {
 		readonly name: string;
 		readonly resources?: Resources;
+		readonly pluralProcessor?: PluralProcessor;
+		readonly interpolationProcessor?: InterpolationProcessor;
+	}
+
+	export interface PluralProcessor {
+		(value: string[], count: number): string;
+	}
+
+	export interface InterpolationFields {
+		[name: string]: string;
+	}
+
+	export interface InterpolationProcessor {
+		(value: string, fields: InterpolationFields): string;
 	}
 
 	export interface Resources {
 		[namespace: string]: {
-			[id: string]: string;
+			[id: string]: string | string[];
 		};
 	}
 

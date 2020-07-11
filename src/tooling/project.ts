@@ -201,7 +201,7 @@ export namespace Project {
 	}
 
 	export interface Translation {
-		value: string;
+		value: Value;
 		lastModified: string;
 	}
 
@@ -211,6 +211,12 @@ export namespace Project {
 
 	export interface Data {
 		values: { [id: string]: TranslationSet };
+	}
+
+	export type Value = string | string[];
+
+	export function isPlural(value: Value): value is string[] {
+		return Array.isArray(value) && value.every(v => typeof v === "string");
 	}
 
 	export namespace Data {
@@ -232,11 +238,12 @@ export namespace Project {
 			};
 		}
 
-		export function updateValue(data: Data, id: string, value: string) {
+		export function updateValue(data: Data, id: string, value: Value) {
 			if (id in data.values) {
-				if (data.values[id].value !== value) {
-					data.values[id].value = value;
-					data.values[id].lastModified = now();
+				if (!valueEquals(data.values[id].value, value)) {
+					const translationSet = data.values[id];
+					translationSet.value = value;
+					translationSet.lastModified = now();
 					return true;
 				}
 			} else {
@@ -249,11 +256,15 @@ export namespace Project {
 			}
 			return false;
 		}
+
+		export function valueEquals(a: Value, b: Value) {
+			return a === b || JSON.stringify(a) === JSON.stringify(b);
+		}
 	}
 
 	export interface LanguageResources {
 		[namespace: string]: {
-			[id: string]: string;
+			[id: string]: Value;
 		};
 	}
 
@@ -272,7 +283,7 @@ export namespace Project {
 			return Object.create(null);
 		}
 
-		export function setValue(resources: LanguageResources, namespace: string, id: string, value: string) {
+		export function setValue(resources: LanguageResources, namespace: string, id: string, value: string | string[]) {
 			let namespaceObj = resources[namespace];
 			if (namespaceObj === undefined) {
 				namespaceObj = Object.create(null);

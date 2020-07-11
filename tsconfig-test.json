@@ -3,6 +3,6 @@
 	"compilerOptions": {
 		"module": "CommonJS",
 		"rootDir": ".",
-		"outDir": "dist/test"
+		"outDir": "test_dist"
 	}
 }

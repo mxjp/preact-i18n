@@ -192,6 +192,22 @@ test("verify (missing source)", t => {
 	t.false(project.verify());
 });
 
+test("verify (same plural value)", t => {
+	const project = new Project(config);
+
+	project.data = {
+		values: {
+			"1": { value: ["a", "b"], lastModified, translations: {} }
+		}
+	};
+
+	project.updateSource(new SourceFile(filenameA, `
+		<TX value={["a", "b"]} id="1" />
+	`));
+
+	t.true(project.verify());
+});
+
 test("verify (value missmatch)", t => {
 	const project = new Project(config);
 
@@ -203,6 +219,22 @@ test("verify (value missmatch)", t => {
 
 	project.updateSource(new SourceFile(filenameA, `
 		<T value="a" id="1" />
+	`));
+
+	t.false(project.verify());
+});
+
+test("verify (plural plural value missmatch)", t => {
+	const project = new Project(config);
+
+	project.data = {
+		values: {
+			"1": { value: ["a", "b"], lastModified, translations: {} }
+		}
+	};
+
+	project.updateSource(new SourceFile(filenameA, `
+		<TX value={["a", "c"]} id="1" />
 	`));
 
 	t.false(project.verify());

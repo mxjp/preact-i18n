@@ -63,7 +63,7 @@ export class Project {
 					}
 					verifiedIds.add(id);
 
-					if (!(id in this._data.values) || this._data.values[id].value !== value) {
+					if (!(id in this._data.values) || !Project.valueEquals(this._data.values[id].value, value)) {
 						return false;
 					}
 
@@ -260,6 +260,10 @@ export namespace Project {
 		return Array.isArray(value) && value.every(v => typeof v === "string");
 	}
 
+	export function valueEquals(a?: Value, b?: Value) {
+		return a === b || JSON.stringify(a) === JSON.stringify(b);
+	}
+
 	export namespace Data {
 		export function now() {
 			return new Date().toISOString();
@@ -296,10 +300,6 @@ export namespace Project {
 				return true;
 			}
 			return false;
-		}
-
-		export function valueEquals(a: Value, b: Value) {
-			return a === b || JSON.stringify(a) === JSON.stringify(b);
 		}
 	}
 

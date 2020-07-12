@@ -1,7 +1,7 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"main": "./runtime/index.js",
 	"scripts": {
 		"clean": "rimraf ./src/runtime/plurals ./src/tooling/plural-meta.ts ./runtime/**/* ./tooling/**/* ./test_dist/**/*",

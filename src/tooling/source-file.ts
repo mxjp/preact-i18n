@@ -2,6 +2,7 @@ import * as path from "path";
 import * as ts from "typescript";
 import * as stringEscape from "js-string-escape";
 import { binarySearchIndex, binarySearch } from "./utility/binary-search";
+import { Project } from "./project";
 
 export class SourceFile {
 	public constructor(filename: string, sourceText: string) {
@@ -105,7 +106,7 @@ export class SourceFile {
 
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
-		const values = new Map<string, string | undefined>();
+		const values = new Map<string, Project.Value | undefined>();
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 				const idAttribute = getJsxAttribute(node.attributes, "id");
@@ -129,7 +130,7 @@ export class SourceFile {
 					}
 				}
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
-				values.set(updatedId, value);
+				values.set(updatedId, Project.isValue(value) ? value : undefined);
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
@@ -181,12 +182,18 @@ function getJsxAttribute(attributes: ts.JsxAttributes, name: string) {
 	return attributes.properties.find(p => ts.isJsxAttribute(p) && p.name.text === name) as ts.JsxAttribute | undefined;
 }
 
-function parseValue(value: ts.StringLiteral | ts.JsxExpression | undefined) {
+function parseValue(value?: ts.Expression): any {
 	if (value === undefined) {
 		return undefined;
 	}
 	if (ts.isStringLiteral(value)) {
 		return value.text;
+	}
+	if (ts.isArrayLiteralExpression(value)) {
+		return value.elements.map(parseValue);
+	}
+	if (ts.isJsxExpression(value) && value.expression) {
+		return parseValue(value.expression);
 	}
 	return undefined;
 }
@@ -232,6 +239,6 @@ export namespace SourceFile {
 		readonly changed: boolean;
 		readonly sourceText: string;
 		/** Map of all (updated) ids to optional values. */
-		readonly values: Map<string, string | undefined>;
+		readonly values: Map<string, Project.Value | undefined>;
 	}
 }

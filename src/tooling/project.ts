@@ -251,6 +251,11 @@ export namespace Project {
 
 	export type Value = string | string[];
 
+	export function isValue(value: any) {
+		return typeof value === "string"
+			|| (Array.isArray(value) && value.every(v => typeof v === "string"));
+	}
+
 	export function isPlural(value: Value): value is string[] {
 		return Array.isArray(value) && value.every(v => typeof v === "string");
 	}

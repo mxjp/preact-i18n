@@ -1,3 +1,4 @@
+import * as colors from "ansi-colors";
 
 export type Diagnostic = {
 	readonly type: Diagnostic.Type.MissingTranslation;
@@ -32,5 +33,27 @@ export namespace Diagnostic {
 		UnknownLanguagePlural,
 		TranslationTypeMissmatch,
 		PluralFormCountMissmatch
+	}
+}
+
+export function getDiagnosticMessage(diagnostic: Diagnostic) {
+	switch (diagnostic.type) {
+		case Diagnostic.Type.MissingTranslation:
+			return `Translation for fragment #${diagnostic.id} for language "${diagnostic.language}" is missing.`;
+
+		case Diagnostic.Type.OutdatedTranslation:
+			return `Translation for fragment #${diagnostic.id} for language "${diagnostic.language}" is outdated.`;
+
+		case Diagnostic.Type.UnconfiguredTranslatedLanguage:
+			return `Fragment #${diagnostic.id} is translated to the language "${diagnostic.language}" that is not configured for this project.`;
+
+		case Diagnostic.Type.UnknownLanguagePlural:
+			return `Pluralization for language "${diagnostic.language}" is not supported.`;
+
+		case Diagnostic.Type.TranslationTypeMissmatch:
+			return `Translation value type for fragment #${diagnostic.id} for language "${diagnostic.language}" is incorrect.`;
+
+		case Diagnostic.Type.PluralFormCountMissmatch:
+			return `Value for fragment #${diagnostic.id} for language "${diagnostic.language}" has a wrong number of plural forms.`;
 	}
 }

@@ -6,16 +6,18 @@ import * as parseArgv from "minimist";
 import { parse } from "json5";
 import { Config } from "./config";
 import { CliProject } from "./cli-project";
+import { getDiagnosticMessage } from "./diagnostic";
 
 async function main() {
 	const argv = process.argv.slice(2);
 	const command = argv.shift();
 	const args = parseArgv(argv, {
 		string: ["config"],
-		boolean: ["verbose"],
+		boolean: ["verbose", "strict"],
 		alias: {
 			config: "c",
-			verbose: "v"
+			verbose: "v",
+			strict: "s"
 		}
 	});
 
@@ -51,6 +53,16 @@ async function main() {
 				throw new Error("Sources and project data are out of sync.");
 			}
 			await project.compileAndWrite();
+
+			const diagnostics = project.getDiagnostics();
+			for (const diagnostic of diagnostics) {
+				console.log(getDiagnosticMessage(diagnostic));
+			}
+
+			if (args.strict && diagnostics.length > 0) {
+				throw new Error("Project data is not in good state.");
+			}
+
 			break;
 		}
 

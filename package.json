@@ -1,8 +1,9 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.4.3",
+	"version": "0.4.4",
 	"main": "./runtime/index.js",
+	"sideEffects": false,
 	"scripts": {
 		"clean": "rimraf ./src/runtime/plurals ./src/tooling/plural-meta.ts ./runtime/**/* ./tooling/**/* ./test_dist/**/*",
 		"gen-plurals": "ts-node --project tsconfig-scripts.json scripts/gen-plurals",

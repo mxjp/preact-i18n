@@ -8,7 +8,7 @@ export class Language {
 		this.name = options.name;
 		this.resources = options.resources || {};
 		this._pluralProcessor = options.pluralProcessor;
-		this._interpolationProcessor = options.interpolationProcessor || Language.interpolate;
+		this._interpolationProcessor = options.interpolationProcessor;
 	}
 
 	public readonly name: string;
@@ -47,12 +47,6 @@ export class Language {
 		}
 		return this._interpolationProcessor(value, fields);
 	}
-
-	public static interpolate(value: string, fields: Language.InterpolationFields) {
-		return value.replace(/\{([^\}]*)\}/g, (_, name: string) => {
-			return fields[name] || "";
-		});
-	}
 }
 
 export namespace Language {
@@ -68,7 +62,7 @@ export namespace Language {
 	}
 
 	export interface InterpolationFields {
-		[name: string]: string;
+		[name: string]: any;
 	}
 
 	export interface InterpolationProcessor {

@@ -74,7 +74,7 @@ export namespace I18n {
 		readonly languageFactory?: LanguageFactory;
 	}
 
-	export type LanguageFactory = (name: string, resource?: Language.Resources) => Language;
+	export type LanguageFactory = (name: string, resources?: Language.Resources) => Language;
 
 	export type UpdateHandler = (controller: I18n) => void;
 

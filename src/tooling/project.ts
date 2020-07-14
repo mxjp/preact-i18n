@@ -123,6 +123,8 @@ export class Project {
 			this._sourceIds.setKey(filename, result.values.keys());
 		}
 
+		// TODO: When replacing ids copy existing translations and invalidate source and target if the value matches.
+
 		// Remove values from project data that do not exist anymore:
 		for (const id in this._data.values) {
 			if (!this._sourceIds.hasValue(id)) {
@@ -177,10 +179,10 @@ export class Project {
 
 		const unknownLanguagePlurals = new Set<string>();
 		function checkLanguagePlural(id: string, language: string, actualCount: number) {
-			const expectedCount = plurals.getFormCount(language);
-			if (expectedCount === undefined) {
+			const rule = plurals.getRule(language);
+			if (rule === undefined) {
 				unknownLanguagePlurals.add(sourceLanguage);
-			} else if (expectedCount !== actualCount) {
+			} else if (rule.forms.length !== actualCount) {
 				diagnostics.push({ type: Diagnostic.Type.PluralFormCountMissmatch, id, language });
 			}
 		}

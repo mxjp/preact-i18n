@@ -10,6 +10,7 @@ export const pluralProcessorModule = (args: {
 import { Language } from "../language";
 
 const p: Language.PluralProcessor = (value: string[], ${countSymbol}: number) => {
+	${countSymbol} = (${countSymbol} < 0 ? -${countSymbol} : ${countSymbol}) | 0;
 	${args.parts.join("\n\t")}
 	return value[${args.defaultIndex}];
 };

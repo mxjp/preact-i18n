@@ -60,8 +60,9 @@ export namespace I18nContext {
 				if ("count" in props) {
 					value = language.pluralize(value as string[], props.count);
 				}
-				if (props.fields) {
-					value = language.interpolate(value as string, props.fields);
+				const fields = (props.fields === undefined && ("count" in props)) ? { count: props.count } : props.fields;
+				if (fields) {
+					value = language.interpolate(value as string, fields);
 				}
 				return value;
 			}}</Language.Consumer>;

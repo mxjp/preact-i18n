@@ -66,14 +66,19 @@ Every application has a localization controller that manages language resources 
 This controller can be used by the `Language.Provider` component that passes the current language down to text fragment components.
 ```tsx
 // src/app.tsx
-import { I18n, FetchClient } from "@mpt/preact-i18n";
+import { I18n, FetchClient, languageFactory } from "@mpt/preact-i18n";
 
 const i18n = new I18n({
+    // A set of clients to use for fetching language resources:
     clients: [
         new FetchClient({
             path: "lang/[lang].json"
         })
-    ]
+    ],
+
+    // The default language factory supports interpolation
+    // and pluralization for supported languages:
+    languageFactory
 });
 ```
 
@@ -110,6 +115,9 @@ There are two types of text components. `<T>` for simple text and `<TX>` for mor
 
 <TX value={["Apple", "Apples"]} count={1} />
 // Apple
+
+<TX value={["{count} apple", "{count} apples"]} count={7} />
+// 7 apples
 ```
 The number of forms depends on the language. You can lookup the number in [plurals.json5](./resources/plurals.json5).
 
@@ -118,13 +126,9 @@ Interval plurals are not yet supported.
 
 ## Interpolation
 ```tsx
-<TX value={["{count} apple", "{count} apples"]} count={7} fields={{ count: 7 }} />
-// 7 apples
-
 <TX value="Hello {name}!" fields={{ name: "World" }} />
 // Hello World!
 ```
-Note, that interpolation braces have no effect if the fields property is undefined.
 
 <br>
 

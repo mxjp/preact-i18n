@@ -1,7 +1,7 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"main": "./runtime/index.js",
 	"scripts": {
 		"clean": "rimraf ./src/runtime/plurals ./src/tooling/plural-meta.ts ./runtime/**/* ./tooling/**/* ./test_dist/**/*",
@@ -36,6 +36,7 @@
 		"ava": "^3.8.2",
 		"concurrently": "^5.2.0",
 		"preact": "^10.4.4",
+		"preact-render-to-string": "^5.1.9",
 		"rimraf": "^3.0.2",
 		"ts-node": "^8.10.2"
 	},

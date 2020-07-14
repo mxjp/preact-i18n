@@ -1,4 +1,3 @@
-import * as colors from "ansi-colors";
 
 export type Diagnostic = {
 	readonly type: Diagnostic.Type.MissingTranslation;

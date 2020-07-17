@@ -1,7 +1,7 @@
 # Preact I18n
 
 ## Status
-This is a proof of concept and things like context and pluralization are not yet supported.
+This is a proof of concept and things might break or change at any time.
 
 ## Installation
 ```bash

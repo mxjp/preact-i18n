@@ -121,9 +121,6 @@ There are two types of text components. `<T>` for simple text and `<TX>` for mor
 ```
 The number of forms depends on the language. You can lookup the number in [plurals.json5](./resources/plurals.json5).
 
-## Interval Plurals
-Interval plurals are not yet supported.
-
 ## Interpolation
 ```tsx
 <TX value="Hello {name}!" fields={{ name: "World" }} />

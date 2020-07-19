@@ -1,16 +1,20 @@
 import { h, createContext, ComponentChildren, Component } from "preact";
 import { I18n } from "./controller";
+import { I18nContext } from "./context";
+import { Formatter, FormatterMap } from "./interpolation";
 
 const context = createContext<Language | null>(null);
 
 export class Language {
 	public constructor(options: Language.Options) {
+		this.controller = options.controller;
 		this.name = options.name;
 		this.resources = options.resources || {};
 		this._pluralProcessor = options.pluralProcessor;
 		this._interpolationProcessor = options.interpolationProcessor;
 	}
 
+	public readonly controller: I18n;
 	public readonly name: string;
 	public resources: Language.Resources;
 
@@ -41,16 +45,17 @@ export class Language {
 		return this._pluralProcessor(value, count);
 	}
 
-	public interpolate(value: string, fields: Language.InterpolationFields) {
+	public interpolate(value: string, fields: Language.InterpolationFields, formatters?: FormatterMap) {
 		if (this._interpolationProcessor === undefined) {
 			throw new Error(`interpolation is not supported for language: ${this.name}`);
 		}
-		return this._interpolationProcessor(value, fields);
+		return this._interpolationProcessor(value, fields, this, formatters);
 	}
 }
 
 export namespace Language {
 	export interface Options {
+		readonly controller: I18n;
 		readonly name: string;
 		readonly resources?: Resources;
 		readonly pluralProcessor?: PluralProcessor;
@@ -66,7 +71,7 @@ export namespace Language {
 	}
 
 	export interface InterpolationProcessor {
-		(value: string, fields: InterpolationFields): string;
+		(value: string, fields: InterpolationFields, language: Language, formatters?: Map<any, Formatter>): string;
 	}
 
 	export interface Resources {

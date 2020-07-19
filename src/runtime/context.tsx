@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { Language } from "./language";
+import { Formatter } from "./interpolation";
 
 export interface I18nContext {
 	readonly T: I18nContext.T;
@@ -8,8 +9,9 @@ export interface I18nContext {
 
 export namespace I18nContext {
 	export interface Options {
-		namespace?: string;
-		sourceLanguage?: string;
+		readonly namespace?: string;
+		readonly sourceLanguage?: string;
+		readonly formatters?: Map<any, Formatter>;
 	}
 
 	export interface T {
@@ -62,7 +64,7 @@ export namespace I18nContext {
 				}
 				const fields = (props.fields === undefined && ("count" in props)) ? { count: props.count } : props.fields;
 				if (fields) {
-					value = language.interpolate(value as string, fields);
+					value = language.interpolate(value as string, fields, options.formatters);
 				}
 				return value;
 			}}</Language.Consumer>;

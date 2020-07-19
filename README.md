@@ -127,6 +127,33 @@ The number of forms depends on the language. You can lookup the number in [plura
 // Hello World!
 ```
 
+## Formatting
+Formatters are functions that are used by text components to format interpolated values.
+```ts
+new I18n({
+    formatters: new Map([
+        [Date.prototype, (value: any, language: Language, format?: string) => {
+            return value.toLocaleString(language.name);
+        }],
+
+        ["hex", (value: number | bigint) => {
+            return value.toString(16);
+        }]
+    ])
+});
+
+<TX value="The current date is {now}" fields={{ now: new Date() }} />
+// The current date is 7/19/2020, 6:15:33 PM
+
+<TX value="The memory address is {address,hex}" fields={{ address: 0xE2740C980AC100B0n }} />
+// The memory address is E2740C980AC100B0
+```
+Formatters are selected as follows:
++ If a formatter name is specified (e.g. `hex`), that formatter is used.
++ If the value is an object, the formatter is selected based on the prototype chain.
++ If the primitive type is not `"string"`, the formatter is selected based on the primitive type.
++ Else, the value is converted using `String(value)`
+
 <br>
 
 

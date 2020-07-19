@@ -127,6 +127,13 @@ The number of forms depends on the language. You can lookup the number in [plura
 // Hello World!
 ```
 
+### Escaping `{` and `}`
+Escaping is not supported, but you can add two simple fields for that purpose if needed:
+```tsx
+<TX value="class {name} {<} ... {>}" fields={{ "<": "{", ">": "}", name: "Example" }} />
+// class Example { ... }
+```
+
 ## Formatting
 Formatters are functions that are used by text components to format interpolated values.
 ```ts

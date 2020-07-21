@@ -115,20 +115,18 @@ export class Project {
 
 			updateResults.delete(filename);
 
-			for (const [id, value] of result.values) {
-				if (value !== undefined && Project.Data.updateValue(this._data, id, value)) {
+			for (const [id, { value, oldId }] of result.fragments) {
+				if (value !== undefined && Project.Data.updateValue(this._data, id, value, oldId)) {
 					dataModified = true;
 				}
 			}
-			this._sourceIds.setKey(filename, result.values.keys());
+			this._sourceIds.setKey(filename, result.fragments.keys());
 		}
-
-		// TODO: When replacing ids copy existing translations and invalidate source and target if the value matches.
 
 		// Remove values from project data that do not exist anymore:
 		for (const id in this._data.values) {
 			if (!this._sourceIds.hasValue(id)) {
-				delete this._data.values[id];
+				Project.Data.removeValue(this._data, id);
 				dataModified = true;
 			}
 		}
@@ -192,16 +190,16 @@ export class Project {
 			const { translations, lastModified, value } = values[id];
 			const lastModifiedTime = Date.parse(lastModified);
 
-			const isPlural = Project.isPlural(value);
-			if (isPlural) {
+			const valueType = Project.getValueType(value);
+			if (valueType === Project.ValueType.Plural) {
 				checkLanguagePlural(id, sourceLanguage, value.length);
 			}
 
 			for (const language of languages) {
 				if (language in translations) {
-					if (Project.isPlural(translations[language].value) !== isPlural) {
+					if (Project.getValueType(translations[language].value) !== valueType) {
 						diagnostics.push({ type: Diagnostic.Type.TranslationTypeMissmatch, id, language });
-					} else if (isPlural) {
+					} else if (valueType === Project.ValueType.Plural) {
 						checkLanguagePlural(id, language, translations[language].value.length);
 					}
 
@@ -248,18 +246,32 @@ export namespace Project {
 	}
 
 	export interface Data {
-		values: { [id: string]: TranslationSet };
+		readonly version: 1;
+		readonly values: { [id: string]: TranslationSet };
 	}
 
-	export type Value = string | string[];
+	export type SimpleValue = string;
+	export type PluralValue = string[];
+	export type Value = SimpleValue | PluralValue;
 
-	export function isValue(value: any) {
-		return typeof value === "string"
-			|| (Array.isArray(value) && value.every(v => typeof v === "string"));
+	export enum ValueType {
+		Unknown,
+		Simple,
+		Plural
 	}
 
-	export function isPlural(value: Value): value is string[] {
-		return Array.isArray(value) && value.every(v => typeof v === "string");
+	export function getValueType(value: any) {
+		if (typeof value === "string") {
+			return ValueType.Simple;
+		}
+		if (Array.isArray(value) && value.every(v => typeof v === "string")) {
+			return ValueType.Plural;
+		}
+		return ValueType.Unknown;
+	}
+
+	export function isId(id: any): id is string {
+		return typeof id === "string";
 	}
 
 	export function valueEquals(a?: Value, b?: Value) {
@@ -281,11 +293,12 @@ export namespace Project {
 
 		export function createEmpty(): Data {
 			return {
+				version: 1,
 				values: Object.create(null)
 			};
 		}
 
-		export function updateValue(data: Data, id: string, value: Value) {
+		export function updateValue(data: Data, id: string, value: Value, oldId: string | undefined) {
 			if (id in data.values) {
 				if (!valueEquals(data.values[id].value, value)) {
 					const translationSet = data.values[id];
@@ -297,11 +310,17 @@ export namespace Project {
 				data.values[id] = {
 					value,
 					lastModified: now(),
-					translations: Object.create(null)
+					translations: (oldId !== undefined && valueEquals(value, data.values[oldId]?.value))
+						? JSON.parse(JSON.stringify(data.values[oldId].translations))
+						: Object.create(null)
 				};
 				return true;
 			}
 			return false;
+		}
+
+		export function removeValue(data: Data, id: string) {
+			delete data.values[id];
 		}
 	}
 

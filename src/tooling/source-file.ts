@@ -106,7 +106,7 @@ export class SourceFile {
 
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
-		const values = new Map<string, Project.Value | undefined>();
+		const fragments = new Map<string, SourceFile.UpdateResult.Fragment>();
 		(function traverse(this: SourceFile, node: ts.Node) {
 			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
 				const idAttribute = getJsxAttribute(node.attributes, "id");
@@ -130,7 +130,10 @@ export class SourceFile {
 					}
 				}
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
-				values.set(updatedId, Project.isValue(value) ? value : undefined);
+				fragments.set(updatedId, {
+					value: (Project.getValueType(value) === Project.ValueType.Unknown) ? undefined : value,
+					oldId: Project.isId(id) ? id : undefined
+				});
 			}
 			ts.forEachChild(node, n => traverse.call(this, n));
 		}).call(this, this.source);
@@ -148,7 +151,7 @@ export class SourceFile {
 		return {
 			changed: rewrites.length > 0,
 			sourceText,
-			values
+			fragments
 		};
 	}
 
@@ -239,6 +242,13 @@ export namespace SourceFile {
 		readonly changed: boolean;
 		readonly sourceText: string;
 		/** Map of all (updated) ids to optional values. */
-		readonly values: Map<string, Project.Value | undefined>;
+		readonly fragments: Map<string, UpdateResult.Fragment>;
+	}
+
+	export namespace UpdateResult {
+		export interface Fragment {
+			readonly value?: Project.Value;
+			readonly oldId?: string;
+		}
 	}
 }

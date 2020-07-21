@@ -22,7 +22,7 @@ test("update", t => {
 		<TX id="7" />
 		<T value="bar" id="42" />
 		<TX value={["foo", "bar"]} />
-		<TX value={42} />
+		<TX value={42} id={7} />
 	`));
 
 	let nextId = 0;
@@ -30,7 +30,7 @@ test("update", t => {
 		updateId(id) {
 			switch (id) {
 				case "7": return "3";
-				case "42": return "5";
+				case "42": return "42";
 				default: return String(nextId++);
 			}
 		}
@@ -39,17 +39,32 @@ test("update", t => {
 	t.is(result.sourceText, code(`
 		<T id="0" value="foo" />
 		<TX id="3" />
-		<T value="bar" id="5" />
+		<T value="bar" id="42" />
 		<TX id="1" value={["foo", "bar"]} />
-		<TX id="2" value={42} />
+		<TX value={42} id="2" />
 	`));
 
-	t.deepEqual(result.values, new Map<string, Project.Value | undefined>([
-		["0", "foo"],
-		["3", undefined],
-		["5", "bar"],
-		["1", ["foo", "bar"]],
-		["2", undefined]
+	t.deepEqual(result.fragments, new Map<string, SourceFile.UpdateResult.Fragment>([
+		["0", {
+			value: "foo",
+			oldId: undefined
+		}],
+		["3", {
+			value: undefined,
+			oldId: "7"
+		}],
+		["42", {
+			value: "bar",
+			oldId: "42"
+		}],
+		["1", {
+			value: ["foo", "bar"],
+			oldId: undefined
+		}],
+		["2", {
+			value: undefined,
+			oldId: undefined
+		}]
 	]));
 });
 

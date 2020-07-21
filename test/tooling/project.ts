@@ -20,11 +20,17 @@ test("workflow", async t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"42": {
 				value: "",
 				lastModified,
-				translations: {}
+				translations: {
+					de: {
+						value: "42",
+						lastModified
+					}
+				}
 			},
 			"7": {
 				value: "b",
@@ -45,19 +51,26 @@ test("workflow", async t => {
 						lastModified
 					}
 				}
+			},
+			"13": {
+				value: "missing",
+				lastModified,
+				translations: {}
 			}
 		}
 	};
 
 	project.updateSource(new SourceFile(filenameA, `
 		<T value="foo" id="42" />
+		<TX value="foo" id="42" />
 		<TX value="bar" id="42" />
 		<T value="a" id="7" />
 	`));
 
 	const sourceAOutput = `
 		<T value="foo" id="42" />
-		<TX value="bar" id="0" />
+		<TX value="foo" id="0" />
+		<TX value="bar" id="1" />
 		<T value="a" id="7" />
 	`;
 
@@ -67,7 +80,7 @@ test("workflow", async t => {
 	`));
 
 	const sourceBOutput = `
-		<TX value="a" id="1" />
+		<TX value="a" id="2" />
 		<T value="b" id="8" />
 	`;
 
@@ -87,14 +100,27 @@ test("workflow", async t => {
 			}
 		},
 		writeProjectData(data) {
-			t.is(data.values["0"].value, "bar");
-			t.is(data.values["1"].value, "a");
+			t.is(data.values["0"].value, "foo");
+			t.not(data.values["0"].lastModified, lastModified);
+			t.is(data.values["0"].translations.de.value, "42");
+			t.is(data.values["0"].translations.de.lastModified, lastModified);
+
+			t.is(data.values["1"].value, "bar");
+
+			t.is(data.values["2"].value, "a");
+
 			t.is(data.values["7"].value, "a");
 			t.not(data.values["7"].lastModified, lastModified);
 			t.is(data.values["7"].translations.de.value, "x");
 			t.is(data.values["7"].translations.de.lastModified, lastModified);
+
 			t.is(data.values["8"].value, "b");
+
+			t.is(data.values["13"], undefined);
+
 			t.is(data.values["42"].value, "foo");
+			t.is(data.values["42"].translations.de.value, "42");
+			t.is(data.values["42"].translations.de.lastModified, lastModified);
 			t.not(data.values["42"].lastModified, lastModified);
 
 			t.is(data, project.data);
@@ -116,6 +142,7 @@ test("verify (valid)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "a", lastModified, translations: {} },
 			"2": { value: "b", lastModified, translations: {} },
@@ -139,6 +166,7 @@ test("verify (duplicate id)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "a", lastModified, translations: {} },
 			"2": { value: "b", lastModified, translations: {} },
@@ -162,6 +190,7 @@ test("verify (missing data)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "a", lastModified, translations: {} }
 		}
@@ -179,6 +208,7 @@ test("verify (missing source)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "a", lastModified, translations: {} },
 			"2": { value: "b", lastModified, translations: {} }
@@ -196,6 +226,7 @@ test("verify (same plural value)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: ["a", "b"], lastModified, translations: {} }
 		}
@@ -212,6 +243,7 @@ test("verify (value missmatch)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "b", lastModified, translations: {} }
 		}
@@ -228,6 +260,7 @@ test("verify (plural plural value missmatch)", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: ["a", "b"], lastModified, translations: {} }
 		}
@@ -244,6 +277,7 @@ test("diagnostics", t => {
 	const project = new Project(config);
 
 	project.data = {
+		version: 1,
 		values: {
 			"1": { value: "b", lastModified, translations: {
 				"de": { value: "b", lastModified }

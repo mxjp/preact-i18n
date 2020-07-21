@@ -1,7 +1,7 @@
 {
 	"name": "@mpt/preact-i18n",
 	"description": "Full stack localization for preact.",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"main": "./runtime/index.js",
 	"sideEffects": false,
 	"scripts": {

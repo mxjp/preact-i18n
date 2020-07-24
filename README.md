@@ -1,4 +1,7 @@
+![Logo Splash](./resources/logo-splash.png)
+
 # Preact I18n
+Developer friendly full stack localization for preact apps.
 
 ## Status
 This is a proof of concept and things might break or change at any time.

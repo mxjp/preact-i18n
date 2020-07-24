@@ -1,30 +1,34 @@
 ![Logo Splash](./resources/logo-splash.png)
 
 # Preact I18n
-Developer friendly full stack localization for preact apps.
+Developer friendly full stack localization for preact apps.<br>
+*This is a proof of concept and things might break or change at any time.*
 
-## Status
-This is a proof of concept and things might break or change at any time.
-
-## Installation
-```bash
-npm i -D @mpt/preact-i18n
-```
++ [Getting Started](#getting-started)
++ [Text Components](#text-components)
+    + [Pluralization](#pluralization)
+    + [Interpolation](#interpolation)
+    + [Formatting](#formatting)
++ [Namespacing & Context](#namespacing--context)
++ [Translation Workflow](#translation-workflow)
 
 <br>
 
 
 
 # Getting Started
+```bash
+npm i -D @mpt/preact-i18n
+```
 
 ## Configuration
+The configuration for a package is stored in a json5 file `i18n.json5`
 ```js
-// i18n.json5
 {
     // Translation data storage path:
     projectData: "./i18n-data.json",
 
-    // The namespace for this application/library.
+    // The namespace for this package.
     // It is recommended to use the npm package name as namespace.
     namespace: "~",
 
@@ -34,7 +38,7 @@ npm i -D @mpt/preact-i18n
     ],
 
     // The output path for compiled language resources:
-    // "[lang]" is replaced with the language code.
+    // "[lang]" is replaced with the language tag.
     output: "dist/lang/[lang].json",
 
     // The language, sources are written in:
@@ -46,58 +50,47 @@ npm i -D @mpt/preact-i18n
 }
 ```
 
-## Context
-Every application or library has it's own localization context that defines things like the namespace.
-The context also exposes the text fragment component that translates texts inside the namespace.
-```ts
-// src/i18n.ts
+## Runtime Setup
+It is recommended to move the runtime configuration to a separate module:
+```tsx
+import { I18n, Language, languageFactory } from "@mpt/preact-i18n";
 
-import { I18nContext } from "@mpt/preact-i18n";
+export const i18n = new I18n({
+    // A set of clients that are used to fetch language resources:
+    clients: [
+        new FetchClient()
+    ],
 
-const { T, TX } = I18nContext.create({
-    // The namespace of this package:
+    // Include the default language factory to
+    // support pluralization and interpolation:
+    languageFactory,
+
+    // The following options should match your configuration:
     namespace: "~",
-    // The language, sources are written in:
     sourceLanguage: "en"
 });
 
-export { T, TX };
+// Export text fragment components:
+export const T = i18n.T;
+export const TX = i18n.TX;
 ```
 
-## Controller
-Every application has a localization controller that manages language resources at runtime.<br>
-This controller can be used by the `Language.Provider` component that passes the current language down to text fragment components.
+## Usage
 ```tsx
-// src/app.tsx
-import { I18n, FetchClient, languageFactory } from "@mpt/preact-i18n";
-
-const i18n = new I18n({
-    // A set of clients to use for fetching language resources:
-    clients: [
-        new FetchClient({
-            path: "lang/[lang].json"
-        })
-    ],
-
-    // The default language factory supports interpolation
-    // and pluralization for supported languages:
-    languageFactory
-});
-```
-
-Before rendering any translated UI, you should set the language.<br>
-`setLanguageAuto` detects the preferred language from the browser to use with a fallback.
-```tsx
-// src/app.tsx
 import { h, render } from "preact";
 import { Language } from "@mpt/preact-i18n";
-import { T } from "./i18n";
+import { i18n, T } from "./i18n";
 
+// Always set the language before rendering anything:
+// Otherwise all text fragments will be empty.
 await i18n.setLanguageAuto(["en", "de", "ch"], "en");
 
-render(<Language.Provider use={i18n}>
-    <h1><T value="Hello World!" id="0"/></h1>
-</Language.Provider>, document.body);
+render(
+    <Language.Provider use={i18n}>
+        <T value="Hello World!" id="0"/>
+    </Language.Provider>,
+    document.body
+);
 ```
 
 <br>
@@ -163,6 +156,28 @@ Formatters are selected as follows:
 + If the value is an object, the formatter is selected based on the prototype chain.
 + If the primitive type is not `"string"`, the formatter is selected based on the primitive type.
 + Else, the value is converted using `String(value)`
+
+<br>
+
+
+
+# Namespacing & Context
+When writing a package with components, you don't want your translations to collide with others.
+To do so, you can create an `I18nContext` that provides text fragment components that automatically look up translations using a different namespace:
+```tsx
+import { createContext } from "@mpt/preact-i18n";
+
+const { T, TX } = createContext({
+    // The following options should match your configuration:
+    namespace: "~",
+    sourceLanguage: "en",
+
+    // Additional formatters that are only available to this context:
+    formatters: ...
+});
+
+export { T, TX };
+```
 
 <br>
 

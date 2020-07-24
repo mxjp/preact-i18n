@@ -1,13 +1,18 @@
 import { Language } from "./language";
 import { Formatter } from "./interpolation";
+import { I18nContext } from "./context";
 
-export class I18n {
+export class I18n implements I18nContext {
 	public constructor(options: I18n.Options) {
 		this._clients = new Set(options.clients);
 		this._languageFactory = options.languageFactory || ((controller, name, resources) => {
 			return new Language({ controller, name, resources });
 		});
 		this.formatters = options.formatters || new Map();
+
+		const context = I18nContext.create(options);
+		this.T = context.T;
+		this.TX = context.TX;
 	}
 
 	private readonly _clients: Set<I18n.Client>;
@@ -18,6 +23,9 @@ export class I18n {
 	private _language: Language | null = null;
 
 	public readonly formatters: Map<any, Formatter>;
+
+	public readonly T: I18nContext.T;
+	public readonly TX: I18nContext.TX;
 
 	public get languages(): ReadonlyMap<string, Language> {
 		return this._languages;
@@ -73,10 +81,9 @@ export class I18n {
 }
 
 export namespace I18n {
-	export interface Options {
+	export interface Options extends I18nContext.Options {
 		readonly clients?: Client[];
 		readonly languageFactory?: LanguageFactory;
-		readonly formatters?: Map<any, Formatter>;
 	}
 
 	export type LanguageFactory = (controller: I18n, name: string, resources?: Language.Resources) => Language;

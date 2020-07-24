@@ -1,21 +1,23 @@
 import test from "ava";
 import { render } from "preact-render-to-string";
 import { h } from "preact";
-import { Language, I18n, I18nContext, languageFactory } from "../../src/runtime";
+import { Language, I18n, languageFactory } from "../../src/runtime";
 
 function createRenderer(deResources?: Language.Resources) {
-	const i18n = new I18n({ languageFactory });
+	const i18n = new I18n({
+		languageFactory,
+		namespace: "test"
+	});
+
 	i18n.addResources("en", {});
 	if (deResources) {
 		i18n.addResources("de", deResources);
 	}
 
-	const { T, TX } = I18nContext.create({ namespace: "test" });
-
 	return {
 		i18n,
-		T,
-		TX,
+		T: i18n.T,
+		TX: i18n.TX,
 		render(content: h.JSX.Element) {
 			return render(<Language.Provider use={i18n}>{content}</Language.Provider>);
 		},

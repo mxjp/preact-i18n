@@ -11,6 +11,9 @@ Developer friendly full stack localization for preact apps.<br>
     + [Formatting](#formatting)
 + [Namespacing & Context](#namespacing--context)
 + [Translation Workflow](#translation-workflow)
++ [Advanced Topics](#advanced-topics)
+    + [Language context](#language-context)
+    + [Update handlers](#update-handlers)
 
 <br>
 
@@ -64,6 +67,10 @@ export const i18n = new I18n({
     // Include the default language factory to
     // support pluralization and interpolation:
     languageFactory,
+
+    // When enabled, the document root "lang" attribute
+    // will be set to the current language name.
+    setLangAttribute: true,
 
     // The following options should match your configuration:
     namespace: "~",
@@ -177,6 +184,36 @@ const { T, TX } = createContext({
 });
 
 export { T, TX };
+```
+
+<br>
+
+
+
+# Advanced Topics
+
+## Language context
+The language context is used to pass the current language instance to text components.<br>
+This can be used to set the `lang` attribute on the root element of your component if the component is beeing used in an application over which you have no control.
+```tsx
+import { Language } from "@mpt/preact-i18n";
+
+<Language.Consumer>{language => {
+    return <div lang={language?.name}>
+        ...
+    </div>;
+}</Language.Consumer>
+```
+
+## Update handlers
+Update handlers can be used to detect when the current language has been changed.<br>
+This is used by the `I18n` class internally if `setLangAttribute` is true:
+```tsx
+i18n.addUpdateHandler(() => {
+    if (i18n.language) {
+        document.documentElement.lang = i18n.language.name;
+    }
+});
 ```
 
 <br>

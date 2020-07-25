@@ -13,6 +13,14 @@ export class I18n implements I18nContext {
 		const context = I18nContext.create(options);
 		this.T = context.T;
 		this.TX = context.TX;
+
+		if (options.setLangAttribute) {
+			this.addUpdateHandler(() => {
+				if (this.language) {
+					document.documentElement.lang = this.language.name;
+				}
+			});
+		}
 	}
 
 	private readonly _clients: Set<I18n.Client>;
@@ -84,6 +92,7 @@ export namespace I18n {
 	export interface Options extends I18nContext.Options {
 		readonly clients?: Client[];
 		readonly languageFactory?: LanguageFactory;
+		readonly setLangAttribute?: boolean;
 	}
 
 	export type LanguageFactory = (controller: I18n, name: string, resources?: Language.Resources) => Language;

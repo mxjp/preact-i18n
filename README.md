@@ -163,7 +163,7 @@ Formatters are selected as follows:
 
 # Namespacing & Context
 When writing a package with components, you don't want your translations to collide with others.
-To do so, you can create an `I18nContext` that provides text fragment components that automatically look up translations using a different namespace:
+To prevent that, you can create an `I18nContext` that provides text fragment components that automatically look up translations using a different namespace:
 ```tsx
 import { createContext } from "@mpt/preact-i18n";
 

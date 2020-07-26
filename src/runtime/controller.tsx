@@ -48,6 +48,10 @@ export class I18n implements I18nContext {
 		this._clients.forEach(client => tasks.push(client.fetchResources(this, name)));
 		await Promise.all(tasks);
 		this._language = this._languages.get(name) ?? null;
+		if (this._language === null) {
+			this._language = this._languageFactory(this, name);
+			this._languages.set(name, this._language);
+		}
 		this.update();
 	}
 

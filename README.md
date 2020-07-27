@@ -14,6 +14,7 @@ Developer friendly full stack localization for preact apps.<br>
 + [Advanced Topics](#advanced-topics)
     + [Language context](#language-context)
     + [Update handlers](#update-handlers)
+    + [Text component names](#text-component-names)
 
 <br>
 
@@ -235,5 +236,12 @@ i18n.addUpdateHandler(() => {
 });
 ```
 
-<br>
+## Text component names
+For the toolchain, it is important, that text components are named `<T>` and `<TX>`. If you need to use other names for some reason, this can be changed per source file by using comments:
+```tsx
+// preact-i18n-components: F, FX
 
+<F id="0" value="Hello World!" />
+```
+
+<br>

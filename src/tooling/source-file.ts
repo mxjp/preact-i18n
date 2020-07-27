@@ -15,11 +15,35 @@ export class SourceFile {
 	public readonly sourceText: string;
 	public readonly source: ts.SourceFile;
 
-	private readonly _componentNames = new Set<string>(["T", "TX"]);
-
+	private _componentNames: Set<string> | null = null;
 	private _lineMap: number[] | undefined = undefined;
 	private _fragmentMap: ReadonlyMap<string, SourceFile.Fragment> | undefined = undefined;
 	private _fragments: SourceFile.Fragment[] | undefined = undefined;
+
+	private _getComponentNames() {
+		if (this._componentNames === null) {
+			this._componentNames = new Set();
+
+			let specified = false;
+			ts.forEachChild(this.source, node => {
+				for (const comment of leadingComments(this.sourceText, node)) {
+					const match = /^preact-i18n-components\:\s*(.*)$/.exec(comment);
+					if (match) {
+						specified = true;
+						for (const name of match[1].split(/\s*,\s*/g)) {
+							this._componentNames?.add(name);
+						}
+					}
+				}
+			});
+
+			if (!specified) {
+				this._componentNames.add("T");
+				this._componentNames.add("TX");
+			}
+		}
+		return this._componentNames;
+	}
 
 	public static isSourceFile(filename: string) {
 		return /\.[tj]sx$/i.test(filename);
@@ -27,8 +51,9 @@ export class SourceFile {
 
 	public ids(): Set<string> {
 		const ids = new Set<string>();
+		const componentNames = this._getComponentNames();
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && componentNames.has(node.tagName.text)) {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				if (typeof id === "string") {
 					ids.add(id);
@@ -41,8 +66,9 @@ export class SourceFile {
 
 	public verify(context: SourceFile.VerifyContext) {
 		let valid = true;
+		const componentNames = this._getComponentNames();
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && componentNames.has(node.tagName.text)) {
 				const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 				const value = parseValue(getJsxAttribute(node.attributes, "value")?.initializer);
 				if (typeof id === "string") {
@@ -61,8 +87,9 @@ export class SourceFile {
 	public get fragmentsById() {
 		if (this._fragmentMap === undefined) {
 			const fragmentMap = new Map<string, SourceFile.Fragment>();
+			const componentNames = this._getComponentNames();
 			(function traverse(this: SourceFile, node: ts.Node) {
-				if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
+				if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && componentNames.has(node.tagName.text)) {
 					const id = parseValue(getJsxAttribute(node.attributes, "id")?.initializer);
 					if (typeof id === "string") {
 						const text = this.sourceText.slice(node.pos, node.end);
@@ -107,8 +134,9 @@ export class SourceFile {
 	public update(context: SourceFile.UpdateContext): SourceFile.UpdateResult {
 		const rewrites: [number, number, string][] = [];
 		const fragments = new Map<string, SourceFile.UpdateResult.Fragment>();
+		const componentNames = this._getComponentNames();
 		(function traverse(this: SourceFile, node: ts.Node) {
-			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && this._componentNames.has(node.tagName.text)) {
+			if (ts.isJsxSelfClosingElement(node) && ts.isIdentifier(node.tagName) && componentNames.has(node.tagName.text)) {
 				const idAttribute = getJsxAttribute(node.attributes, "id");
 				const id = parseValue(idAttribute?.initializer);
 				const updatedId = context.updateId(typeof id === "string" ? id : undefined);
@@ -207,6 +235,23 @@ function leadingSpace(value: string) {
 
 function trailingSpace(value: string) {
 	return /\s*$/.exec(value)![0];
+}
+
+function * leadingComments(sourceText: string, node: ts.Node) {
+	const comments = ts.getLeadingCommentRanges(sourceText, node.getFullStart());
+	if (comments) {
+		for (const comment of comments) {
+			switch (comment.kind) {
+				case ts.SyntaxKind.SingleLineCommentTrivia:
+					yield sourceText.slice(comment.pos + 2, comment.end).trim();
+					break;
+
+				case ts.SyntaxKind.MultiLineCommentTrivia:
+					yield sourceText.slice(comment.pos + 2, comment.end - 2).trim();
+					break;
+			}
+		}
+	}
 }
 
 export namespace SourceFile {

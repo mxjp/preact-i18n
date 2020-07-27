@@ -177,3 +177,24 @@ test("position/offset conversion", t => {
 	t.is(sourceFile.positionToOffset({ line: 2, character: 2 }), 7);
 	t.is(sourceFile.positionToOffset({ line: 2, character: 3 }), 8);
 });
+
+test("component name comments", t => {
+	const sourceFile = new SourceFile(filename, code(`
+		// preact-i18n-components: F, FX, FX2
+		function render() {
+			return <div>
+				<F id="7" />
+				<FX id="42" />
+				<FX2 id="111" />
+				<T id="3" />
+				<TX id="11" />
+			</div>;
+		}
+	`));
+	t.deepEqual(sourceFile.fragments, [
+		{ id: "7", start: 74, end: 86 },
+		{ id: "42", start: 89, end: 103 },
+		{ id: "111", start: 106, end: 122 }
+	]);
+	t.pass();
+});
